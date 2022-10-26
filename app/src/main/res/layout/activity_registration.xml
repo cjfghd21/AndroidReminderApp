@@ -4,50 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#D5F5E3"
-    tools:context=".LoginActivity">
-
+    android:background="#AFEEEE"
+    tools:context=".RegistrationActivity">
     <LinearLayout
-        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:orientation="vertical"
-        android:padding="25dp">
-
+        android:padding="25dp"
+        android:orientation="vertical">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Log-in"
-            android:textSize="25dp" />
-
+            android:textSize="25dp"
+            android:text="Register"/>
+        <EditText
+            android:id="@+id/email_text"
+            android:hint="Email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
         <EditText
             android:id="@+id/username_text"
+            android:hint="User Name"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="User Name" />
-
+            android:layout_height="wrap_content"/>
         <EditText
             android:id="@+id/password_text"
+            android:hint="Password"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Password" />
-
+            android:layout_height="wrap_content"/>
         <Button
             android:id="@+id/btn_sign_in_submit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="25dp"
-            android:text="Sign in" />
+            android:text="Complete Registration"/>
     </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textSize="20dp"
-        android:text="Don't have an account? Sign up!"
-        android:layout_marginBottom="10dp"
-        app:layout_constraintBottom_toBottomOf="@+id/linearLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
