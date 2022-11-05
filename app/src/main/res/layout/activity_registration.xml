@@ -27,14 +27,7 @@
             android:background="@drawable/edit_text_rounded"
             android:layout_marginBottom="20dp"
             android:paddingLeft="15dp"/>
-        <EditText
-            android:id="@+id/username_text"
-            android:hint="User Name"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@drawable/edit_text_rounded"
-            android:layout_marginBottom="20dp"
-            android:paddingLeft="15dp"/>
+
         <EditText
             android:id="@+id/password_text"
             android:hint="Password"
@@ -49,6 +42,12 @@
             android:layout_height="wrap_content"
             android:text="Complete Registration"
             android:background="@drawable/button_oval" />
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
     </LinearLayout>
 
 </ScrollView>
