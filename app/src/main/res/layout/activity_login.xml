@@ -35,7 +35,10 @@
                 android:layout_marginBottom="20dp"
                 android:background="@drawable/edit_text_rounded"
                 android:hint="User Name"
-                android:paddingLeft="15dp" />
+                android:paddingLeft="15dp"
+                android:inputType="textEmailAddress"
+                android:importantForAutofill="no" />
+
 
             <EditText
                 android:id="@+id/password_text"
@@ -44,14 +47,30 @@
                 android:layout_marginBottom="40dp"
                 android:background="@drawable/edit_text_rounded"
                 android:hint="Password"
-                android:paddingLeft="15dp" />
+                android:paddingLeft="15dp"
+                android:inputType="textPassword"
+                android:importantForAutofill="no" />
 
             <Button
                 android:id="@+id/btn_sign_in_submit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_oval"
+                android:layout_marginBottom="20dp"
                 android:text="Sign in" />
+            <Button
+                android:id="@+id/btn_google_sign"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_oval"
+                android:text="Sign in with Google" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
         </LinearLayout>
     </ScrollView>
 
