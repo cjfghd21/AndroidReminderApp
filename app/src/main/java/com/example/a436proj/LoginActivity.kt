@@ -17,6 +17,8 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ktx.database
+import com.google.firebase.database.ktx.snapshots
 import com.google.firebase.ktx.Firebase
 
 
@@ -25,7 +27,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var binding: ActivityLoginBinding
     private val REQ_ONE_TAP = 2
-
+    private val database = Firebase.database
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +82,10 @@ class LoginActivity : AppCompatActivity() {
                    Toast.LENGTH_LONG
                ).show()
 
+               //
+               val dbRef = database.getReference("User")
+               dbRef.child(firebaseAuth.uid!!).child("email").get() //getting email from database <- need to change to data once we know which data are going to be stored.
+               //update viewModel values with data retrieved.
                startActivity(Intent(this, MainActivity::class.java))
                finishAffinity()
            }else{
@@ -147,10 +153,7 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
         }
-        // ...
     }
-
-
 
 
 }
