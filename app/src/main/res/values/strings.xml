@@ -10,4 +10,5 @@
     <string name="register_success_string">Registration successful!</string>
     <string name="register_failed_string">Registration failed! Please try again later</string>
     <string  name="web_client_id">951802864601-aiqbs92cqaq3pljd2eei6apj1cpkmc6m.apps.googleusercontent.com</string>
+    <string name="channel_name">NotificationChannel</string>
 </resources>
