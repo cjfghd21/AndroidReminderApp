@@ -5,6 +5,7 @@ data class SelectableGroups (val groups : List<Group>) {
                       val contacts : List<Contact>) {
         data class Contact (val name : String,
                             val timeSinceLastCall : String,
-                            val timeSinceLastText : String)
+                            val timeSinceLastText : String,
+                            val reminderText : String)
     }
 }

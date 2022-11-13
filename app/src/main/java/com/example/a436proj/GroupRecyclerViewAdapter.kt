@@ -2,6 +2,7 @@ package com.example.a436proj
 
 import android.content.Context
 import android.graphics.Color
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,14 +35,14 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
                 holder.arrow.setOnClickListener {
                     if (row.isExpanded) {
                         row.isExpanded = false
-                        holder.layout.setBackgroundColor(Color.WHITE)
+                        //holder.layout.setBackgroundColor(Color.WHITE)
+                        holder.arrow.setImageResource(R.drawable.expand_arrow)
                         collapseRow(position)
-
-
-                    }else{
+                    }
+                    else{
                         row.isExpanded = true
-                        holder.layout.setBackgroundColor(Color.GRAY)
-                        holder.arrow.setImageResource(R.mipmap.placeholder_image)
+                        //holder.layout.setBackgroundColor(Color.GRAY)
+                        holder.arrow.setImageResource(R.drawable.unexpand_arrow)
                         expandRow(position)
                     }
                 }
@@ -62,6 +63,21 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
                 (holder as GroupChildViewHolder).name.text = row.groupChild.name
                 holder.timeSinceLastCall.text = row.groupChild.timeSinceLastCall
                 holder.timeSinceLastText.text = row.groupChild.timeSinceLastText
+                holder.reminderText.text = row.groupChild.reminderText
+                holder.arrow.setOnClickListener {
+                    if (row.isExpanded) {
+                        row.isExpanded = false
+                        holder.arrow.setImageResource(R.drawable.expand_arrow)
+                        holder.contactExpandableContainer.visibility = View.GONE
+                        holder.contactContainer.setBackgroundResource(R.drawable.group_item_border_background)
+                    }
+                    else {
+                        row.isExpanded = true
+                        holder.arrow.setImageResource(R.drawable.unexpand_arrow)
+                        holder.contactExpandableContainer.visibility = View.VISIBLE
+                        holder.contactContainer.setBackgroundResource(R.drawable.group_item_expanded_border_background)
+                    }
+                }
             }
         }
     }
@@ -74,10 +90,12 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
         when (row.type) {
             ExpandableGroupModel.PARENT -> {
                 for(child in row.groupParent.contacts){
+                    Log.d("Testing", child.name)
                     groupModelList.add(++nextPosition, ExpandableGroupModel(ExpandableGroupModel.CHILD, child))
                 }
                 notifyDataSetChanged()
             }
+
             ExpandableGroupModel.CHILD -> {
                 notifyDataSetChanged()
             }
@@ -116,8 +134,14 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
 
     inner class GroupChildViewHolder(binding : ExpandableGroupChildBinding) : RecyclerView.ViewHolder(binding.root) {
         internal var layout = binding.root
+        internal var arrow = binding.arrow
+        internal var contactExpandableContainer = binding.contactExpandableContainer
+        internal var contactContainer = binding.contactContainer
+
         internal var name = binding.name
         internal var timeSinceLastCall = binding.timeSinceLastCall
         internal var timeSinceLastText = binding.timeSinceLastText
+        internal var reminderText = binding.reminderText
+
     }
 }

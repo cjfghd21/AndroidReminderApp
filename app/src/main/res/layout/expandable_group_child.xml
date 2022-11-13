@@ -1,75 +1,143 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <LinearLayout
-        android:id="@+id/expandable_vertical_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:gravity="right"
         app:layout_constraintTop_toTopOf="parent">
-
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/group_item_border_background"
-            android:gravity="right">
+            android:orientation="vertical"
+            android:layout_weight="0.95">
+            <LinearLayout
+                android:id="@+id/contact_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:background="@drawable/group_item_border_background"
+                android:gravity="right"
+                android:weightSum="1"
+                >
+                <ImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:gravity="center_vertical"
+                    android:src="@drawable/person" />
 
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:gravity="center_vertical"
-                android:src="@mipmap/placeholder_image" />
+                <TextView
+                    android:id="@+id/name"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:text="Test Text"
+                    android:textStyle="bold"
+                    android:gravity="center_vertical"
+                    android:layout_weight="0.4"/>
 
-            <TextView
-                android:id="@+id/name"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="Test Text"
-                android:gravity="center_vertical" />
+                <ImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:gravity="center_vertical"
+                    android:src="@drawable/phone" />
 
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:gravity="center_vertical"
-                android:src="@mipmap/placeholder_image" />
+                <TextView
+                    android:id="@+id/time_since_last_call"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:text="Test Text"
+                    android:gravity="center_vertical"
+                    android:layout_weight="0.3"/>
 
-            <TextView
-                android:id="@+id/time_since_last_call"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="Test Text"
-                android:gravity="center_vertical" />
+                <ImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:gravity="center_vertical"
+                    android:src="@drawable/message" />
 
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:gravity="center_vertical"
-                android:src="@mipmap/placeholder_image" />
+                <TextView
+                    android:id="@+id/time_since_last_text"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:text="Test Text"
+                    android:gravity="center_vertical"
+                    android:layout_weight="0.3"/>
+                <ImageView
+                    android:id="@+id/arrow"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:gravity="center_vertical"
+                    android:src="@drawable/expand_arrow" />
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/time_since_last_text"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="Test Text"
-                android:gravity="center_vertical" />
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:gravity="center_vertical"
-                android:src="@mipmap/placeholder_image" />
+            <LinearLayout
+                android:id="@+id/contact_expandable_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:paddingLeft="10dp"
+                android:background="@drawable/group_item_border_background"
+                android:gravity="left"
+                android:visibility="gone"
+                android:weightSum="1">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_weight="0.65">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="Reminders"/>
+                    <TextView
+                        android:id="@+id/reminder_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text=""/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.35"
+                    android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/phone"
+                            android:layout_margin="10dp"/>
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/message"
+                            android:layout_margin="10dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

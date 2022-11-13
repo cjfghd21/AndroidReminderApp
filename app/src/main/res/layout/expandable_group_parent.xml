@@ -3,13 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="100dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/expandable_group_container">
+    android:id="@+id/expandable_group_container"
+    android:background="@drawable/group_parent_border_background">
         <ImageView
-            android:id="@+id/dropdown_icon"
+            android:id="@+id/arrow"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:gravity="center_vertical"
-            android:src="@mipmap/placeholder_image"
+            android:src="@drawable/expand_arrow"
             android:layout_marginLeft="10dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -22,11 +23,10 @@
             android:textSize="50dp"
             android:gravity="center"/>
         <ImageView
-            android:id="@+id/arrow"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:gravity="center_vertical"
-            android:src="@mipmap/placeholder_image"
+            android:src="@drawable/settings"
             android:layout_marginRight="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
