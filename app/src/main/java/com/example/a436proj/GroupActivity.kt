@@ -1,14 +1,17 @@
 package com.example.a436proj
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.a436proj.databinding.ActivityUitestingBinding
+import androidx.core.app.ActivityCompat
+import com.example.a436proj.databinding.ActivityGroupBinding
+import java.io.Serializable
 
-class UITestingActivity : AppCompatActivity() {
+class GroupActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding = ActivityUitestingBinding.inflate(layoutInflater)
+        val binding = ActivityGroupBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
 
@@ -22,12 +25,17 @@ class UITestingActivity : AppCompatActivity() {
                     SelectableGroups.Group.Contact("Yun Chang", "3 weeks", "14 hours", "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight."),
                     SelectableGroups.Group.Contact("Cheolhong Ahn", "31 days", "10 minutes", "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight.")
                 ))))
-            //list.add(ExpandableGroupModel(ExpandableGroupModel.CHILD, SelectableGroups.Group.Contact("test", "0", "0")))
         }
 
-        GroupRecyclerViewAdapter(this, list).also {
+        var groupRV = GroupRecyclerViewAdapter(this, list).also {
             binding.list.adapter = it
             binding.list.setHasFixedSize(true)
+        }
+
+        groupRV.settingsClickListener = GroupRecyclerViewAdapter.OnSettingsClickListener {
+            var groupSettingsIntent = Intent(this, GroupSettingsActivity::class.java)
+            groupSettingsIntent.putExtra("contactsList",  (it.groupParent.contacts as Serializable))
+            var result = startActivityForResult(groupSettingsIntent, 0)
         }
     }
 }

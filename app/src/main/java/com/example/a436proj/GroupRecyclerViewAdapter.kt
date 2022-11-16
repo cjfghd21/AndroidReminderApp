@@ -1,17 +1,25 @@
 package com.example.a436proj
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
+import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.recyclerview.widget.RecyclerView
 import com.example.a436proj.databinding.ExpandableGroupChildBinding
 import com.example.a436proj.databinding.ExpandableGroupParentBinding
+import java.io.Serializable
 
 class GroupRecyclerViewAdapter(var context: Context, var groupModelList : MutableList<ExpandableGroupModel>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    var settingsClickListener : OnSettingsClickListener? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when(viewType) {
             ExpandableGroupModel.PARENT -> {GroupParentViewHolder(ExpandableGroupParentBinding.inflate(
@@ -46,6 +54,8 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
                         expandRow(position)
                     }
                 }
+
+                holder.settingsButton.setOnClickListener { settingsClickListener?.onSettingsClick(row) }
                 /*holder.upArrowImg.setOnClickListener{
                     if(row.isExpanded){
                         row.isExpanded = false
@@ -78,8 +88,21 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
                         holder.contactContainer.setBackgroundResource(R.drawable.group_item_expanded_border_background)
                     }
                 }
+                //For Anthony: Put call code here
+                holder.callButton.setOnClickListener {
+
+                }
+
+                //For Anthony: Put message code here
+                holder.messageButton.setOnClickListener {
+
+                }
             }
         }
+    }
+
+    fun interface OnSettingsClickListener {
+        fun onSettingsClick(item : ExpandableGroupModel)
     }
 
     override fun getItemViewType(position: Int): Int = groupModelList[position].type
@@ -130,6 +153,7 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
         internal var layout = binding.expandableGroupContainer
         internal var groupName : TextView = binding.groupName
         internal var arrow = binding.arrow
+        internal var settingsButton = binding.settings
     }
 
     inner class GroupChildViewHolder(binding : ExpandableGroupChildBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -137,6 +161,8 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
         internal var arrow = binding.arrow
         internal var contactExpandableContainer = binding.contactExpandableContainer
         internal var contactContainer = binding.contactContainer
+        internal var callButton = binding.callButton
+        internal var messageButton = binding.messageButton
 
         internal var name = binding.name
         internal var timeSinceLastCall = binding.timeSinceLastCall
