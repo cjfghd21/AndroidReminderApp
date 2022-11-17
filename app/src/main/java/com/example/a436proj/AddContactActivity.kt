@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.a436proj.databinding.ActivityAddContactBinding
 import com.example.a436proj.ui.home.HomeViewModel
+import com.example.a436proj.SelectableGroups
 
 class AddContactActivity : AppCompatActivity() {
     companion object {
@@ -191,6 +192,12 @@ class AddContactActivity : AppCompatActivity() {
                 Log.d("CREATION", obj.toString())
                 contactList.add(obj)
             }
+            val ourIntent = Intent()
+            val tempContact = SelectableGroups.Group.Contact("temp", "temp", "temp", "temp", false)
+            ourIntent.putExtra("ourTHing",tempContact )
+            setResult(123, ourIntent)
+
+
             var clr = binding.contactList
             //findViewById<RecyclerView>(R.id.contact_list)
             Log.d("CREATION", contactList.toString())

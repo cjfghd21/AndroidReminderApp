@@ -63,7 +63,12 @@ class GroupSettingsActivity : AppCompatActivity() {
 
         binding.addButton.setOnClickListener {
             val intent = Intent(this, AddContactActivity::class.java)
-            startActivity(intent)
+//            startActivity(intent)
+            startActivityForResult(
+                intent,
+                1
+            )
+
         }
 
         binding.deleteButton.setOnClickListener {
