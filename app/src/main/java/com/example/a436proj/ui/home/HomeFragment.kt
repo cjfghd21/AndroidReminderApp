@@ -110,9 +110,7 @@ class HomeFragment : Fragment() {
 
     private fun onReadButtonClick() {
         Log.d("CREATION", "OnReadButtonClick enter")
-//        startContactsActivity()
         requestPermissionLauncher.launch(PERMISSION)
-//        startContactsActivity()
         when {
             context?.let { checkSelfPermission(it, PERMISSION) } == PackageManager.PERMISSION_GRANTED -> {
                 Log.d("CREATION", "OnReadButtonClickFirst")
