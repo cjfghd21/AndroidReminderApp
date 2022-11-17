@@ -31,7 +31,7 @@ class GroupSettingsContactRecyclerViewAdapter(var context: Context, var contacts
             var checkedFound = false
             var notCheckedFound = false
 
-            for (i in 0..contactsList.size) {
+            for (i in 0 until contactsList.size) {
                 if (contactsList[i].groupSettingsIsChecked) {
                     checkedFound = true
                 } else {

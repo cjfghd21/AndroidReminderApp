@@ -1,5 +1,6 @@
 package com.example.a436proj
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
@@ -61,7 +62,8 @@ class GroupSettingsActivity : AppCompatActivity() {
         }
 
         binding.addButton.setOnClickListener {
-
+            val intent = Intent(this, AddContactActivity::class.java)
+            startActivity(intent)
         }
 
         binding.deleteButton.setOnClickListener {
