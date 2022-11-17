@@ -35,7 +35,6 @@ class AddContactActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("CREATION", contactList.size.toString())
          binding = ActivityAddContactBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
@@ -58,11 +57,9 @@ class AddContactActivity : AppCompatActivity() {
         requestPermissionLauncher.launch(PERMISSION)
         when {
             applicationContext.let { ContextCompat.checkSelfPermission(it, PERMISSION) } == PackageManager.PERMISSION_GRANTED -> {
-                Log.d("CREATION", "OnReadButtonClickFirst")
                 //startContactsActivity() //Duplicates contacts after moving to activity
             }
             shouldShowRequestPermissionRationale(PERMISSION) -> {
-                Log.d("CREATION", "OnReadButtonClickSecond")
                 requestPermissionLauncher.launch(PERMISSION)
             }
         }
@@ -70,8 +67,10 @@ class AddContactActivity : AppCompatActivity() {
         /*binding.btnReadContact.setOnClickListener{
             onReadButtonClick()
         }*/
-        Log.d("CREATION", "onCreateView is being called")
 
+        binding.backArrow.setOnClickListener {
+            
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
