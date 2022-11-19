@@ -86,7 +86,7 @@ class LoginActivity : AppCompatActivity() {
                val dbRef = database.getReference("User")
                dbRef.child(firebaseAuth.uid!!).child("email").get() //getting email from database <- need to change to data once we know which data are going to be stored.
                //update viewModel values with data retrieved.
-               startActivity(Intent(this, MainActivity::class.java))
+               startActivity(Intent(this, GroupActivity::class.java))
                finishAffinity()
            }else{
                Toast.makeText(
@@ -123,7 +123,7 @@ class LoginActivity : AppCompatActivity() {
                                             "Login Success",
                                             Toast.LENGTH_LONG
                                         ).show()
-                                        startActivity(Intent(this, MainActivity::class.java))
+                                        startActivity(Intent(this, GroupActivity::class.java))
                                         finishAffinity()
 
                                     } else {
