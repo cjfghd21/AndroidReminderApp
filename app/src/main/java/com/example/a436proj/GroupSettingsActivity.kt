@@ -11,6 +11,14 @@ import java.io.Serializable
 class GroupSettingsActivity : AppCompatActivity() {
 
     private lateinit var viewModel : GroupSettingsViewModel
+    lateinit var contactsLists : MutableList<SelectableGroups.Group.Contact>
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        data?.getSerializableExtra("OurData").also { contactsLists = it as MutableList<SelectableGroups.Group.Contact> }
+        Log.d("Our Activity Result", " getting here!!!!!!!!!!!!")
+        Log.d("Our Activity Result", contactsLists.toString())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,8 +26,12 @@ class GroupSettingsActivity : AppCompatActivity() {
         val binding = ActivityGroupSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+<<<<<<< HEAD
         val contactsList : MutableList<SelectableGroups.Group.Contact> = intent.extras?.get("contactsList") as MutableList<SelectableGroups.Group.Contact>
         val groupIndex : Int = intent.extras?.get("groupIndex") as Int
+=======
+        contactsLists = intent.extras?.get("contactsList") as MutableList<SelectableGroups.Group.Contact>
+>>>>>>> 6b085f697e54e1c3c5d6ad190fb111da48d8165c
         //val notificationsList = intent.extras
 
         /*val contactsList = mutableListOf(
@@ -70,7 +82,7 @@ class GroupSettingsActivity : AppCompatActivity() {
             binding.notificationsRecyclerView.adapter = it
             binding.notificationsRecyclerView.setHasFixedSize(true)
         }
-
+        
         val contactsRV = GroupSettingsContactRecyclerViewAdapter(this, viewModel.contactsList.value!!, viewModel::tickCheckBox).also {
             binding.contactsRecyclerView.adapter = it
             binding.contactsRecyclerView.setHasFixedSize(true)
@@ -89,7 +101,12 @@ class GroupSettingsActivity : AppCompatActivity() {
 
         binding.addButton.setOnClickListener {
             val intent = Intent(this, AddContactActivity::class.java)
-            startActivity(intent)
+//            startActivity(intent)
+            startActivityForResult(
+                intent,
+                1
+            )
+
         }
 
         binding.deleteButton.setOnClickListener {
