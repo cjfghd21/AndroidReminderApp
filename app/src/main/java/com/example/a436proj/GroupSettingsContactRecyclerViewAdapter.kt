@@ -17,9 +17,7 @@ class GroupSettingsContactRecyclerViewAdapter(var context: Context, var contacts
 
     override fun onBindViewHolder(holder: GroupSettingsContactViewHolder, position: Int) {
         holder.name.text = contactsList[position].name
-        holder.timeSinceLastCall.text = contactsList[position].timeSinceLastCall
-        holder.timeSinceLastText.text = contactsList[position].timeSinceLastText
-
+        holder.phoneNumber.text = contactsList[position].phoneNumber
         holder.checkBox.setOnClickListener {
             handleTickCheckbox(position)
         }
@@ -36,8 +34,7 @@ class GroupSettingsContactRecyclerViewAdapter(var context: Context, var contacts
 
     inner class GroupSettingsContactViewHolder(binding: GroupSettingsContactBinding) : RecyclerView.ViewHolder(binding.root) {
         val name : TextView = binding.name
-        val timeSinceLastCall : TextView = binding.timeSinceLastCall
-        val timeSinceLastText : TextView = binding.timeSinceLastText
+        val phoneNumber = binding.phoneNumber
         val checkBox = binding.contactCheckbox
 
     }

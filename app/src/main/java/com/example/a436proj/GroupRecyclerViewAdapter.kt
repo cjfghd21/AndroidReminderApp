@@ -56,23 +56,12 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
                 }
 
                 holder.settingsButton.setOnClickListener { settingsClickListener?.onSettingsClick(row, position) }
-                /*holder.upArrowImg.setOnClickListener{
-                    if(row.isExpanded){
-                        row.isExpanded = false
-                        collapseRow(position)
-                        holder.layout.setBackgroundColor(Color.WHITE)
-                        holder.upArrowImg.visibility = View.GONE
-                        holder.closeImage.visibility = View.VISIBLE
-
-                    }
-                }*/
             }
 
 
             ExpandableGroupModel.CHILD -> {
                 (holder as GroupChildViewHolder).name.text = row.groupChild.name
-                holder.timeSinceLastCall.text = row.groupChild.timeSinceLastCall
-                holder.timeSinceLastText.text = row.groupChild.timeSinceLastText
+                holder.phoneNumber.text = row.groupChild.phoneNumber
                 holder.reminderText.text = row.groupChild.reminderText
                 holder.arrow.setOnClickListener {
                     if (row.isExpanded) {
@@ -170,8 +159,7 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
         internal var messageButton = binding.messageButton
 
         internal var name = binding.name
-        internal var timeSinceLastCall = binding.timeSinceLastCall
-        internal var timeSinceLastText = binding.timeSinceLastText
+        internal var phoneNumber = binding.phoneNumber
         internal var reminderText = binding.reminderText
 
     }

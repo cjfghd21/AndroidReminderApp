@@ -15,6 +15,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,19 +30,21 @@ class AddContactActivity : AppCompatActivity() {
         private const val CONTENT_ITEM_TYPE = ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_TYPE
     }
 
+    private lateinit var viewModel : AddContactViewModel
+
     private var contactList : MutableList<ContactDto> = ArrayList() //deprecated
-//    lateinit
 
     private var contactLists : MutableList<SelectableGroups.Group.Contact> = ArrayList()
     private lateinit var binding : ActivityAddContactBinding
     private lateinit var contactAdapter : ContactAdapter
-    var ourIntent = Intent()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
          binding = ActivityAddContactBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
+
+        viewModel = ViewModelProvider(this)[AddContactViewModel::class.java]
 
         val homeViewModel =
             ViewModelProvider(this).get(HomeViewModel::class.java)
@@ -73,11 +76,22 @@ class AddContactActivity : AppCompatActivity() {
         }*/
 
         binding.backArrow.setOnClickListener {
-<<<<<<< HEAD
+            val intent = Intent()
+            var resultList : MutableList<SelectableGroups.Group.Contact> = mutableListOf()
 
-=======
+            for (i in 0 until viewModel.contactsList.value!!.size) {
+                resultList.add(SelectableGroups.Group.Contact(
+                    viewModel.contactsList.value!![i].name,
+                    "",
+                    viewModel.contactsList.value!![i].number
+                ))
+            }
+
+            intent.putExtra("newContactsList", resultList as Serializable)
+            setResult(0, intent)
+
             // get the checkedList and filter our result
-            val returnedCheckedList = contactAdapter.getCheckedList()
+            /*val returnedCheckedList = contactAdapter.getCheckedList()
             for (item in contactLists) {
                 if (returnedCheckedList.contains(item.name)) {
                     contactLists.remove(item) // filtering list in a way that we only send what is selected.
@@ -85,9 +99,10 @@ class AddContactActivity : AppCompatActivity() {
             }
             // make sure we are returning the list of checked items
             ourIntent.putExtra("OurData", contactLists as Serializable ) // pass our contactList.
-            setResult(123, ourIntent)
+            setResult(123, ourIntent)*/
+
             finish()
->>>>>>> 6b085f697e54e1c3c5d6ad190fb111da48d8165c
+
         }
     }
 
@@ -207,9 +222,10 @@ class AddContactActivity : AppCompatActivity() {
                 obj.number = number
 
                 Log.d("CREATION", obj.toString())
+
                 contactList.add(obj)
                 // add person to so eventually we can pass through intent
-                val person = SelectableGroups.Group.Contact(name, "none", "none", "none", false)
+                val person = SelectableGroups.Group.Contact(name, "none", "none",  false)
                 contactLists.add(person)
             }
 
@@ -221,7 +237,12 @@ class AddContactActivity : AppCompatActivity() {
             //findViewById<RecyclerView>(R.id.contact_list)
             Log.d("CREATION", contactList.toString())
 
-            contactAdapter = ContactAdapter(contactList, applicationContext)
+            if (!viewModel.contactsListInitialized.value!!) {
+                viewModel.contactsList.value = contactList
+                viewModel.contactsListInitialized.value = true
+            }
+
+            contactAdapter = ContactAdapter(viewModel.contactsList.value!!, applicationContext, viewModel::tickCheckBox)
             clr.adapter = contactAdapter
             //clr.adapter = applicationContext.let { ContactAdapter(contactList, it) }
             contacts.close()

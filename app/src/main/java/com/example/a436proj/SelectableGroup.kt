@@ -6,9 +6,8 @@ data class SelectableGroups (var groups : List<Group>) : Serializable {
     data class Group (var groupName : String,
                       var contacts : List<Contact>) : Serializable {
         data class Contact (var name : String,
-                            var timeSinceLastCall : String,
-                            var timeSinceLastText : String,
                             var reminderText : String,
+                            var phoneNumber : String,
                             var groupSettingsIsChecked : Boolean = false) : Serializable
     }
 }

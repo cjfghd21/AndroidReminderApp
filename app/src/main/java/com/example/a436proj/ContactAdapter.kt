@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.a436proj.databinding.AddContactContactBinding
 
-class ContactAdapter(items : List<ContactDto>, ctx: Context) : RecyclerView.Adapter<ContactAdapter.ViewHolder>(){
+class ContactAdapter(items : List<ContactDto>, ctx: Context, var handleTickCheckbox : (position : Int) -> Unit) : RecyclerView.Adapter<ContactAdapter.ViewHolder>(){
 
     private var list = items
     private var context = ctx
@@ -23,14 +23,13 @@ class ContactAdapter(items : List<ContactDto>, ctx: Context) : RecyclerView.Adap
         holder.name.text = list[position].name
         holder.number.text = list[position].number
 
-        if (holder.check_box.isChecked) {
-            // store it in list
-            checkedList.add(list[position].name)
-        } else {
-            checkedList.remove(list[position].name)
+        holder.checkBox.setOnClickListener {
+            handleTickCheckbox(position)
         }
 
+        holder.checkBox.isChecked = list[position].isChecked
     }
+
     fun getCheckedList(): ArrayList<String> {
         return checkedList
     }
@@ -48,6 +47,6 @@ class ContactAdapter(items : List<ContactDto>, ctx: Context) : RecyclerView.Adap
         val name : TextView = binding.name
         val number : TextView = binding.number
 
-        var check_box = itemView.findViewById<CheckBox>(R.id.contact_checkbox)
+        var checkBox = itemView.findViewById<CheckBox>(R.id.contact_checkbox)
     }
 }

@@ -6,5 +6,5 @@ class ContactDto {
     var name = ""
     var number = ""
     var image: Bitmap? = null
-
+    var isChecked = false
 }

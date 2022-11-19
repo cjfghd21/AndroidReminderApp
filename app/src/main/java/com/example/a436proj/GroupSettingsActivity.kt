@@ -12,12 +12,30 @@ class GroupSettingsActivity : AppCompatActivity() {
 
     private lateinit var viewModel : GroupSettingsViewModel
     lateinit var contactsLists : MutableList<SelectableGroups.Group.Contact>
+    private lateinit var contactsRV : GroupSettingsContactRecyclerViewAdapter
+    private var groupIndex : Int = -1
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        data?.getSerializableExtra("OurData").also { contactsLists = it as MutableList<SelectableGroups.Group.Contact> }
+
+        if (requestCode == 0) {
+            if (resultCode == 0) {
+                var resultList = data?.extras?.get("newContactsList") as MutableList<SelectableGroups.Group.Contact>
+                for (i in 0 until resultList.size) {
+                    viewModel.contactsList.value!!.add(resultList[i])
+                }
+
+                contactsRV.updateContactsList(viewModel.contactsList.value!!)
+                intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
+                intent.putExtra("groupIndex", groupIndex)
+                setResult(RESULT_OK, intent)
+
+            }
+        }
+
+       /* data?.getSerializableExtra("OurData").also { contactsLists = it as MutableList<SelectableGroups.Group.Contact> }
         Log.d("Our Activity Result", " getting here!!!!!!!!!!!!")
-        Log.d("Our Activity Result", contactsLists.toString())
+        Log.d("Our Activity Result", contactsLists.toString())*/
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,9 +43,9 @@ class GroupSettingsActivity : AppCompatActivity() {
 
         val binding = ActivityGroupSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
         val contactsList : MutableList<SelectableGroups.Group.Contact> = intent.extras?.get("contactsList") as MutableList<SelectableGroups.Group.Contact>
-        val groupIndex : Int = intent.extras?.get("groupIndex") as Int
+        groupIndex = intent.extras?.get("groupIndex") as Int
 
         //val notificationsList = intent.extras
 
@@ -80,7 +98,7 @@ class GroupSettingsActivity : AppCompatActivity() {
             binding.notificationsRecyclerView.setHasFixedSize(true)
         }
 
-        val contactsRV = GroupSettingsContactRecyclerViewAdapter(this, viewModel.contactsList.value!!, viewModel::tickCheckBox).also {
+        contactsRV = GroupSettingsContactRecyclerViewAdapter(this, viewModel.contactsList.value!!, viewModel::tickCheckBox).also {
             binding.contactsRecyclerView.adapter = it
             binding.contactsRecyclerView.setHasFixedSize(true)
         }
@@ -99,11 +117,7 @@ class GroupSettingsActivity : AppCompatActivity() {
         binding.addButton.setOnClickListener {
             val intent = Intent(this, AddContactActivity::class.java)
 //            startActivity(intent)
-            startActivityForResult(
-                intent,
-                1
-            )
-
+            startActivityForResult(intent, 0)
         }
 
         binding.deleteButton.setOnClickListener {

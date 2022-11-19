@@ -53,28 +53,12 @@
                     android:src="@drawable/phone" />
 
                 <TextView
-                    android:id="@+id/time_since_last_call"
+                    android:id="@+id/phone_number"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:text="Test Text"
                     android:gravity="center_vertical"
-                    android:layout_weight="0.3"/>
-
-                <ImageView
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:gravity="center_vertical"
-                    android:src="@drawable/message" />
-
-                <TextView
-                    android:id="@+id/time_since_last_text"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:text="Test Text"
-                    android:gravity="center_vertical"
-                    android:layout_weight="0.3"/>
+                    android:layout_weight="0.6"/>
                 <ImageView
                     android:id="@+id/arrow"
                     android:layout_width="40dp"
