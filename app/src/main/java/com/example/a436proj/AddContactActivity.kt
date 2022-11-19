@@ -68,7 +68,7 @@ class AddContactActivity : AppCompatActivity() {
         }*/
 
         binding.backArrow.setOnClickListener {
-            
+
         }
     }
 

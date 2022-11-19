@@ -4,14 +4,11 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.example.a436proj.databinding.GroupSettingsContactBinding
 
-class GroupSettingsContactRecyclerViewAdapter(var context: Context, var contactsList : MutableList<SelectableGroups.Group.Contact>) : RecyclerView.Adapter<GroupSettingsContactRecyclerViewAdapter.GroupSettingsContactViewHolder>() {
-
-    var allSelected = false
-    var allTheSame = false
-
+class GroupSettingsContactRecyclerViewAdapter(var context: Context, var contactsList : MutableList<SelectableGroups.Group.Contact>, var handleTickCheckbox : (position : Int) -> Unit) : RecyclerView.Adapter<GroupSettingsContactRecyclerViewAdapter.GroupSettingsContactViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupSettingsContactViewHolder {
         return GroupSettingsContactViewHolder(GroupSettingsContactBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
@@ -24,52 +21,17 @@ class GroupSettingsContactRecyclerViewAdapter(var context: Context, var contacts
         holder.timeSinceLastText.text = contactsList[position].timeSinceLastText
 
         holder.checkBox.setOnClickListener {
-
-            contactsList[position].groupSettingsIsChecked = holder.checkBox.isChecked
-
-            allTheSame = true
-            var checkedFound = false
-            var notCheckedFound = false
-
-            for (i in 0 until contactsList.size) {
-                if (contactsList[i].groupSettingsIsChecked) {
-                    checkedFound = true
-                } else {
-                    notCheckedFound = true
-                }
-            }
-
-            if (checkedFound.xor(notCheckedFound)) {
-                allTheSame = false
-            }
+            handleTickCheckbox(position)
         }
 
-        if (allSelected) {
-            holder.checkBox.isChecked = true
-        }
-        else {
-            if (!allTheSame && contactsList[position].groupSettingsIsChecked) {
-                holder.checkBox.isChecked = true
-            }
-            else if (!allTheSame && !contactsList[position].groupSettingsIsChecked) {
-                holder.checkBox.isChecked = false
-            }
-            else {
-                holder.checkBox.isChecked = false
-            }
-        }
+        holder.checkBox.isChecked = contactsList[position].groupSettingsIsChecked
     }
 
     override fun getItemCount(): Int = contactsList.size
 
-    fun selectAll() {
-        allSelected = true
-        allTheSame = true
-    }
-
-    fun unselectAll() {
-        allSelected = false
-        allTheSame = true
+    fun updateContactsList(newList : MutableList<SelectableGroups.Group.Contact>) {
+        contactsList = newList
+        notifyDataSetChanged()
     }
 
     inner class GroupSettingsContactViewHolder(binding: GroupSettingsContactBinding) : RecyclerView.ViewHolder(binding.root) {

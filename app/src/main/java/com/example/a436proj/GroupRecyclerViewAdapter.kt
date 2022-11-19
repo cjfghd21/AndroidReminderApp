@@ -55,7 +55,7 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
                     }
                 }
 
-                holder.settingsButton.setOnClickListener { settingsClickListener?.onSettingsClick(row) }
+                holder.settingsButton.setOnClickListener { settingsClickListener?.onSettingsClick(row, position) }
                 /*holder.upArrowImg.setOnClickListener{
                     if(row.isExpanded){
                         row.isExpanded = false
@@ -102,7 +102,7 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
     }
 
     fun interface OnSettingsClickListener {
-        fun onSettingsClick(item : ExpandableGroupModel)
+        fun onSettingsClick(item : ExpandableGroupModel, position : Int)
     }
 
     override fun getItemViewType(position: Int): Int = groupModelList[position].type
@@ -146,6 +146,11 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
                 notifyDataSetChanged()
             }
         }
+    }
+
+    fun updateGroupModelList(newList : MutableList<ExpandableGroupModel>) {
+        groupModelList = newList
+        notifyDataSetChanged()
     }
 
 

@@ -3,8 +3,10 @@ package com.example.a436proj
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupSettingsBinding
+import java.io.Serializable
 
 class GroupSettingsActivity : AppCompatActivity() {
 
@@ -17,6 +19,7 @@ class GroupSettingsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val contactsList : MutableList<SelectableGroups.Group.Contact> = intent.extras?.get("contactsList") as MutableList<SelectableGroups.Group.Contact>
+        val groupIndex : Int = intent.extras?.get("groupIndex") as Int
         //val notificationsList = intent.extras
 
         /*val contactsList = mutableListOf(
@@ -49,16 +52,39 @@ class GroupSettingsActivity : AppCompatActivity() {
             "JKHSADSAKJHSD AH SDKJA HDSKJAHKDJHAJKDH SAKHDKJ AKSDHKJA HDSKJAHD KSJAHDKJSAHKJDASH SDKHJSA DKJSAHD KJSAHDSKJA HDKSAJH DSKAJHD SKJAH DKSAJ HDSKAJHDSKJA HDSKJAHDSKJSA HDKSAJH DKSJA"
         )
 
+        viewModel = ViewModelProvider(this)[GroupSettingsViewModel::class.java]
 
+        if (!viewModel.contactsListInitialzed.value!!) {
+            Log.d("sajhdjskadsa", "ViewModel Initialized")
+            viewModel.contactsList.value = contactsList
+            viewModel.contactsListInitialzed.value = true
+        }
+
+        //viewModel.contactsList.value = contactsList
+
+        viewModel.allSelected.observe(this) {
+            binding.checkAllCheckbox.isChecked = it
+        }
 
         val notificationsRV = GroupSettingsNotificationsRecyclerViewAdapter(this, notificationsList).also {
             binding.notificationsRecyclerView.adapter = it
             binding.notificationsRecyclerView.setHasFixedSize(true)
         }
 
-        val contactsRV = GroupSettingsContactRecyclerViewAdapter(this, contactsList).also {
+        val contactsRV = GroupSettingsContactRecyclerViewAdapter(this, viewModel.contactsList.value!!, viewModel::tickCheckBox).also {
             binding.contactsRecyclerView.adapter = it
             binding.contactsRecyclerView.setHasFixedSize(true)
+        }
+
+        binding.checkAllCheckbox.setOnClickListener {
+            if (binding.checkAllCheckbox.isChecked) {
+                viewModel.selectAll()
+                contactsRV.updateContactsList(viewModel.contactsList.value!!)
+            }
+            else {
+                viewModel.unselectAll()
+                contactsRV.updateContactsList(viewModel.contactsList.value!!)
+            }
         }
 
         binding.addButton.setOnClickListener {
@@ -67,22 +93,12 @@ class GroupSettingsActivity : AppCompatActivity() {
         }
 
         binding.deleteButton.setOnClickListener {
-
-        }
-
-        binding.checkAllCheckbox.setOnClickListener {
-            if (binding.checkAllCheckbox.isChecked) {
-                contactsRV.selectAll()
-            }
-            else {
-                contactsRV.unselectAll()
-            }
-        }
-
-        viewModel = ViewModelProvider(this)[GroupSettingsViewModel::class.java]
-
-        viewModel.allTheSame.observe(this) {
-            binding
+            viewModel.deleteChecked()
+            contactsRV.updateContactsList(viewModel.contactsList.value!!)
+            val intent = Intent()
+            intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
+            intent.putExtra("groupIndex", groupIndex)
+            setResult(RESULT_OK, intent)
         }
 
     }
