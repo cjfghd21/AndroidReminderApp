@@ -38,7 +38,13 @@
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/layout/group_settings_notification.xml" value="0.2796296296296296" />
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/layout/menu.xml" value="0.17375886524822695" />
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/menu/search_menu.xml" value="0.35833333333333334" />
+        <entry key="app/src/main/res/layout/activity_add_contact.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_group.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_group_settings.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.3591485507246377" />
+        <entry key="app/src/main/res/layout/add_contact_contact.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/contact_child.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/expandable_group_child.xml" value="0.1" />
       </map>
     </option>
   </component>

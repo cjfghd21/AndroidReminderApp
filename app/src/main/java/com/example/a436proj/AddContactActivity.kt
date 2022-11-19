@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.a436proj.databinding.ActivityAddContactBinding
 import com.example.a436proj.ui.home.HomeViewModel
 import com.example.a436proj.SelectableGroups
+import java.io.Serializable
 
 class AddContactActivity : AppCompatActivity() {
     companion object {
@@ -28,10 +29,13 @@ class AddContactActivity : AppCompatActivity() {
         private const val CONTENT_ITEM_TYPE = ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_TYPE
     }
 
-    private var contactList : MutableList<ContactDto> = ArrayList()
+    private var contactList : MutableList<ContactDto> = ArrayList() //deprecated
+//    lateinit
 
+    private var contactLists : MutableList<SelectableGroups.Group.Contact> = ArrayList()
     private lateinit var binding : ActivityAddContactBinding
     private lateinit var contactAdapter : ContactAdapter
+    var ourIntent = Intent()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,7 +73,17 @@ class AddContactActivity : AppCompatActivity() {
         }*/
 
         binding.backArrow.setOnClickListener {
-            
+            // get the checkedList and filter our result
+            val returnedCheckedList = contactAdapter.getCheckedList()
+            for (item in contactLists) {
+                if (returnedCheckedList.contains(item.name)) {
+                    contactLists.remove(item) // filtering list in a way that we only send what is selected.
+                }
+            }
+            // make sure we are returning the list of checked items
+            ourIntent.putExtra("OurData", contactLists as Serializable ) // pass our contactList.
+            setResult(123, ourIntent)
+            finish()
         }
     }
 
@@ -190,11 +204,13 @@ class AddContactActivity : AppCompatActivity() {
 
                 Log.d("CREATION", obj.toString())
                 contactList.add(obj)
+                // add person to so eventually we can pass through intent
+                val person = SelectableGroups.Group.Contact(name, "none", "none", "none", false)
+                contactLists.add(person)
             }
-            val ourIntent = Intent()
-            val tempContact = SelectableGroups.Group.Contact("temp", "temp", "temp", "temp", false)
-            ourIntent.putExtra("ourTHing",tempContact )
-            setResult(123, ourIntent)
+
+//            ourIntent.putExtra("OurData", contactLists as Serializable ) // pass our contactList.
+//            setResult(123, ourIntent)
 
 
             var clr = binding.contactList
@@ -205,6 +221,7 @@ class AddContactActivity : AppCompatActivity() {
             clr.adapter = contactAdapter
             //clr.adapter = applicationContext.let { ContactAdapter(contactList, it) }
             contacts.close()
+//            finish() // can we close heere?
         }
     }
 }
