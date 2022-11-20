@@ -1,8 +1,14 @@
 package com.example.a436proj
 
+import android.content.DialogInterface
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.InputType
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupBinding
@@ -18,6 +24,8 @@ class GroupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val binding = ActivityGroupBinding.inflate(layoutInflater)
+
+        supportActionBar!!.title = "Groups"
 
         setContentView(binding.root)
 
@@ -63,5 +71,39 @@ class GroupActivity : AppCompatActivity() {
                 groupRV.updateGroupModelList(viewModel.groups.value!!)
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.add_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        var id : Int = item.itemId
+
+        if (id == R.id.add) {
+            var builder = AlertDialog.Builder(this)
+            builder.setTitle("Add Group")
+
+            var inputEditText = EditText(this)
+            inputEditText.inputType = InputType.TYPE_CLASS_TEXT
+
+            builder.setView(inputEditText)
+
+            builder.setPositiveButton("Add Group") { dialog, which ->
+                viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
+                    SelectableGroups.Group(inputEditText.text.toString(),
+                        mutableListOf<SelectableGroups.Group.Contact>())))
+            }
+
+            builder.setNegativeButton("Cancel") { dialog, which ->
+                dialog.dismiss()
+            }
+
+            builder.show()
+        }
+
+
+        return true
     }
 }

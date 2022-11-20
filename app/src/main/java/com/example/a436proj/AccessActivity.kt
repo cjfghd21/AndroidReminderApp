@@ -15,6 +15,8 @@ class AccessActivity : AppCompatActivity() {
         binding = ActivityAccessBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        supportActionBar!!.title = "Welcome"
+
         binding.btnSignIn.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
         }

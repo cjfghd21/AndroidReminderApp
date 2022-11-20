@@ -44,6 +44,8 @@ class AddContactActivity : AppCompatActivity() {
 
         setContentView(binding.root)
 
+        supportActionBar!!.title = "Search"
+
         viewModel = ViewModelProvider(this)[AddContactViewModel::class.java]
 
         val homeViewModel =

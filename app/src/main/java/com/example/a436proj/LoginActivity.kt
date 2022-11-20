@@ -34,6 +34,8 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        supportActionBar!!.title = "Login"
+
         firebaseAuth = requireNotNull(FirebaseAuth.getInstance())
 
         val signInRequest = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)

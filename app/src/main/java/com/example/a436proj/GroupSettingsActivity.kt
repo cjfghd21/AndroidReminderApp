@@ -44,6 +44,8 @@ class GroupSettingsActivity : AppCompatActivity() {
         val binding = ActivityGroupSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        supportActionBar!!.title = "Group Settings"
+
         val contactsList : MutableList<SelectableGroups.Group.Contact> = intent.extras?.get("contactsList") as MutableList<SelectableGroups.Group.Contact>
         groupIndex = intent.extras?.get("groupIndex") as Int
 

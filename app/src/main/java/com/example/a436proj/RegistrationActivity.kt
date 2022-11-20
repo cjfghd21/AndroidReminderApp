@@ -22,6 +22,8 @@ class RegistrationActivity : AppCompatActivity() {
         binding = ActivityRegistrationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        supportActionBar!!.title = "Register"
+
         auth = requireNotNull(FirebaseAuth.getInstance())
 
         binding.btnSignInSubmit.setOnClickListener {registerNewUser()}
