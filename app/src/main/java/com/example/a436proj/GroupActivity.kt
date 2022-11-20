@@ -29,7 +29,7 @@ class GroupActivity : AppCompatActivity() {
 
         setContentView(binding.root)
 
-        for (i in 1..4) {
+        /*for (i in 1..4) {
             list.add(ExpandableGroupModel(ExpandableGroupModel.PARENT, SelectableGroups.Group(i.toString(),
                 mutableListOf(
                     SelectableGroups.Group.Contact("Marcus Brooks",  "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight.", "(123)456-7890", false),
@@ -37,7 +37,7 @@ class GroupActivity : AppCompatActivity() {
                     SelectableGroups.Group.Contact("Yun Chang",  "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight.", "(123)456-7890",false),
                     SelectableGroups.Group.Contact("Cheolhong Ahn",  "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight.", "(123)456-7890",false)
                 ))))
-        }
+        }*/
 
         viewModel = ViewModelProvider(this)[GroupViewModel::class.java]
 
