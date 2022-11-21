@@ -70,6 +70,10 @@ class GroupActivity : AppCompatActivity() {
                 viewModel.groups.value!![data?.extras?.get("groupIndex") as Int].groupParent.contacts = data?.extras?.get("resultContactsList") as MutableList<SelectableGroups.Group.Contact>
                 groupRV.updateGroupModelList(viewModel.groups.value!!)
             }
+
+            if (resultCode == RESULT_CANCELED) {
+                
+            }
         }
     }
 
@@ -94,6 +98,21 @@ class GroupActivity : AppCompatActivity() {
                 viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
                     SelectableGroups.Group(inputEditText.text.toString(),
                         mutableListOf<SelectableGroups.Group.Contact>())))
+            }
+
+            builder.setNegativeButton("Cancel") { dialog, which ->
+                dialog.dismiss()
+            }
+
+            builder.show()
+        }
+
+        if (id == R.id.sign_out) {
+            var builder = AlertDialog.Builder(this)
+            builder.setTitle("Sign Out?")
+
+            builder.setPositiveButton("Sign Out") { dialog, which ->
+
             }
 
             builder.setNegativeButton("Cancel") { dialog, which ->

@@ -10,6 +10,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.recyclerview.widget.RecyclerView
 import com.example.a436proj.databinding.ExpandableGroupChildBinding
@@ -34,6 +37,21 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
     }
 
     override fun getItemCount(): Int = groupModelList.size
+
+    /*private val requestPermissionLauncher: ActivityResultLauncher<String> =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            //TODO: Dial the phone number if the permission has been granted.
+            if (isGranted) {
+                dialPhoneNumber();
+            } else {
+                Toast.makeText(
+                    this, getString(R.string.need_permission_string),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }*/
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val row = groupModelList[position]
