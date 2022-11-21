@@ -113,6 +113,7 @@ class GroupActivity : AppCompatActivity() {
                     viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
                         SelectableGroups.Group(inputEditText.text.toString(),
                             mutableListOf<SelectableGroups.Group.Contact>())))
+                    groupRV.updateGroupModelList(viewModel.groups.value!!)
                 }
             }
 
