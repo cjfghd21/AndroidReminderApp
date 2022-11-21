@@ -42,7 +42,9 @@
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/menu/add_menu.xml" value="0.1828125" />
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/menu/delete_menu.xml" value="0.18177083333333333" />
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/menu/search_menu.xml" value="0.35833333333333334" />
+        <entry key="app/src/main/res/layout/activity_group_settings.xml" value="0.24947916666666667" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.3591485507246377" />
+        <entry key="app/src/main/res/layout/add_contact_contact.xml" value="0.1716485507246377" />
       </map>
     </option>
   </component>

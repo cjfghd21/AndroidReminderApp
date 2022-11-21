@@ -1,7 +1,9 @@
 package com.example.a436proj
 
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.InputType
@@ -12,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupBinding
+import com.google.firebase.auth.FirebaseAuth
 import java.io.Serializable
 
 class GroupActivity : AppCompatActivity() {
@@ -19,7 +22,7 @@ class GroupActivity : AppCompatActivity() {
     var list = mutableListOf<ExpandableGroupModel>()
     private lateinit var groupRV : GroupRecyclerViewAdapter
     private lateinit var viewModel : GroupViewModel
-
+    private lateinit var pref: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -115,7 +118,15 @@ class GroupActivity : AppCompatActivity() {
             builder.setTitle("Sign Out?")
 
             builder.setPositiveButton("Sign Out") { dialog, which ->
-
+                pref = getSharedPreferences("Credentials", Context.MODE_PRIVATE) //shared ref
+                with(pref.edit()){
+                    putString("email", "")
+                    putString("password", "")
+                    apply()
+                }
+                FirebaseAuth.getInstance().signOut(); //unauthorize current user out from firebase
+                finishAffinity()
+                startActivity(Intent(this, AccessActivity::class.java))
             }
 
             builder.setNegativeButton("Cancel") { dialog, which ->
