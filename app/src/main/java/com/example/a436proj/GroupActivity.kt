@@ -10,6 +10,7 @@ import android.text.InputType
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
@@ -62,9 +63,9 @@ class GroupActivity : AppCompatActivity() {
             startActivityForResult(groupSettingsIntent, 0)
         }
 
-        /*viewModel.groups.observe(this) {
+        viewModel.groups.observe(this) {
             groupRV.updateGroupModelList(viewModel.groups.value!!)
-        }*/
+        }
     }
 
     override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
@@ -101,9 +102,18 @@ class GroupActivity : AppCompatActivity() {
             builder.setView(inputEditText)
 
             builder.setPositiveButton("Add Group") { dialog, which ->
-                viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
-                    SelectableGroups.Group(inputEditText.text.toString(),
-                        mutableListOf<SelectableGroups.Group.Contact>())))
+                if(inputEditText.text.toString() == "") {
+                    Toast.makeText(
+                        this,
+                        "Group name can't be empty.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                else {
+                    viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
+                        SelectableGroups.Group(inputEditText.text.toString(),
+                            mutableListOf<SelectableGroups.Group.Contact>())))
+                }
             }
 
             builder.setNegativeButton("Cancel") { dialog, which ->
