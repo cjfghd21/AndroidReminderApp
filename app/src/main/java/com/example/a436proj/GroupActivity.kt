@@ -72,7 +72,8 @@ class GroupActivity : AppCompatActivity() {
             }
 
             if (resultCode == RESULT_CANCELED) {
-                
+                viewModel.groups.value!!.removeAt(data?.extras?.get("groupIndex") as Int)
+                groupRV.updateGroupModelList(viewModel.groups.value!!)
             }
         }
     }
