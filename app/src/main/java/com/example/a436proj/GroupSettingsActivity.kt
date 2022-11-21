@@ -118,6 +118,7 @@ class GroupSettingsActivity : AppCompatActivity() {
 
         binding.addButton.setOnClickListener {
             val intent = Intent(this, AddContactActivity::class.java)
+            intent.putExtra("currentContacts", viewModel.contactsList.value!! as Serializable)
 //            startActivity(intent)
             startActivityForResult(intent, 0)
         }

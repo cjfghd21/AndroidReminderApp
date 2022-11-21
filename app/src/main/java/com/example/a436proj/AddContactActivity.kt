@@ -33,8 +33,6 @@ class AddContactActivity : AppCompatActivity() {
     private lateinit var viewModel : AddContactViewModel
 
     private var contactList : MutableList<ContactDto> = ArrayList() //deprecated
-
-    private var contactLists : MutableList<SelectableGroups.Group.Contact> = ArrayList()
     private lateinit var binding : ActivityAddContactBinding
     private lateinit var contactAdapter : ContactAdapter
 
@@ -82,11 +80,15 @@ class AddContactActivity : AppCompatActivity() {
             var resultList : MutableList<SelectableGroups.Group.Contact> = mutableListOf()
 
             for (i in 0 until viewModel.contactsList.value!!.size) {
-                resultList.add(SelectableGroups.Group.Contact(
-                    viewModel.contactsList.value!![i].name,
-                    "",
-                    viewModel.contactsList.value!![i].number
-                ))
+                if (viewModel.contactsList.value!![i].isChecked) {
+                    resultList.add(
+                        SelectableGroups.Group.Contact(
+                            viewModel.contactsList.value!![i].name,
+                            "",
+                            viewModel.contactsList.value!![i].number
+                        )
+                    )
+                }
             }
 
             intent.putExtra("newContactsList", resultList as Serializable)
@@ -215,10 +217,24 @@ class AddContactActivity : AppCompatActivity() {
         val contacts = contentResolver?.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,null,null,null)
         if (contacts != null) {
             Log.d("CREATION", "Do we have non null contacts?")
+            val currentContacts : MutableList<SelectableGroups.Group.Contact> =  intent.extras?.get("currentContacts") as MutableList<SelectableGroups.Group.Contact>
+
             while (contacts.moveToNext()) {
                 Log.d("CREATION", "How many contacts do we have")
+                var alreadyAddedFlag = false
                 val name = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
                 val number = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+
+                for (i in 0 until currentContacts.size) {
+                    if (currentContacts[i].name == name && currentContacts[i].phoneNumber == number) {
+                        alreadyAddedFlag = true
+                        break
+                    }
+                }
+                if (alreadyAddedFlag) {
+                    continue
+                }
+
                 val obj = ContactDto()
                 obj.name = name
                 obj.number = number
@@ -226,13 +242,7 @@ class AddContactActivity : AppCompatActivity() {
                 Log.d("CREATION", obj.toString())
 
                 contactList.add(obj)
-                // add person to so eventually we can pass through intent
-                val person = SelectableGroups.Group.Contact(name, "none", "none",  false)
-                contactLists.add(person)
             }
-
-//            ourIntent.putExtra("OurData", contactLists as Serializable ) // pass our contactList.
-//            setResult(123, ourIntent)
 
 
             var clr = binding.contactList
