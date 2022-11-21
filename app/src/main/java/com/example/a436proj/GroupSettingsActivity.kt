@@ -4,6 +4,9 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupSettingsBinding
 import java.io.Serializable
@@ -118,6 +121,7 @@ class GroupSettingsActivity : AppCompatActivity() {
 
         binding.addButton.setOnClickListener {
             val intent = Intent(this, AddContactActivity::class.java)
+            intent.putExtra("currentContacts", viewModel.contactsList.value!! as Serializable)
 //            startActivity(intent)
             startActivityForResult(intent, 0)
         }
@@ -130,11 +134,39 @@ class GroupSettingsActivity : AppCompatActivity() {
             intent.putExtra("groupIndex", groupIndex)
             setResult(RESULT_OK, intent)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.delete_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        var id : Int = item.itemId
+
+        if (id == R.id.delete_group_button) {
+            var builder = AlertDialog.Builder(this)
+            builder.setTitle("Delete Group?")
+
+            builder.setPositiveButton("Delete") { dialog, which ->
+                var deleteIntent = Intent()
+                deleteIntent.putExtra("groupIndex", groupIndex)
+                setResult(RESULT_CANCELED, deleteIntent)
+                finish()
+            }
+
+            builder.setNegativeButton("Cancel") { dialog, which ->
+                dialog.dismiss()
+            }
+
+            builder.show()
+        }
 
         // button for setting the notification/reminder timer specific for this group
 //        binding.set_notification_btn.setOnClickListener {
 //            // do what is necessary.
 //        }
 
+        return true
     }
 }

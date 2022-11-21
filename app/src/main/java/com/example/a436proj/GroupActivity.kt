@@ -1,7 +1,9 @@
 package com.example.a436proj
 
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.InputType
@@ -12,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupBinding
+import com.google.firebase.auth.FirebaseAuth
 import java.io.Serializable
 
 class GroupActivity : AppCompatActivity() {
@@ -19,7 +22,7 @@ class GroupActivity : AppCompatActivity() {
     var list = mutableListOf<ExpandableGroupModel>()
     private lateinit var groupRV : GroupRecyclerViewAdapter
     private lateinit var viewModel : GroupViewModel
-
+    private lateinit var pref: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -29,7 +32,7 @@ class GroupActivity : AppCompatActivity() {
 
         setContentView(binding.root)
 
-        for (i in 1..4) {
+        /*for (i in 1..4) {
             list.add(ExpandableGroupModel(ExpandableGroupModel.PARENT, SelectableGroups.Group(i.toString(),
                 mutableListOf(
                     SelectableGroups.Group.Contact("Marcus Brooks",  "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight.", "(123)456-7890", false),
@@ -37,7 +40,7 @@ class GroupActivity : AppCompatActivity() {
                     SelectableGroups.Group.Contact("Yun Chang",  "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight.", "(123)456-7890",false),
                     SelectableGroups.Group.Contact("Cheolhong Ahn",  "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight.", "(123)456-7890",false)
                 ))))
-        }
+        }*/
 
         viewModel = ViewModelProvider(this)[GroupViewModel::class.java]
 
@@ -70,6 +73,11 @@ class GroupActivity : AppCompatActivity() {
                 viewModel.groups.value!![data?.extras?.get("groupIndex") as Int].groupParent.contacts = data?.extras?.get("resultContactsList") as MutableList<SelectableGroups.Group.Contact>
                 groupRV.updateGroupModelList(viewModel.groups.value!!)
             }
+
+            if (resultCode == RESULT_CANCELED) {
+                viewModel.groups.value!!.removeAt(data?.extras?.get("groupIndex") as Int)
+                groupRV.updateGroupModelList(viewModel.groups.value!!)
+            }
         }
     }
 
@@ -94,6 +102,29 @@ class GroupActivity : AppCompatActivity() {
                 viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
                     SelectableGroups.Group(inputEditText.text.toString(),
                         mutableListOf<SelectableGroups.Group.Contact>())))
+            }
+
+            builder.setNegativeButton("Cancel") { dialog, which ->
+                dialog.dismiss()
+            }
+
+            builder.show()
+        }
+
+        if (id == R.id.sign_out) {
+            var builder = AlertDialog.Builder(this)
+            builder.setTitle("Sign Out?")
+
+            builder.setPositiveButton("Sign Out") { dialog, which ->
+                pref = getSharedPreferences("Credentials", Context.MODE_PRIVATE) //shared ref
+                with(pref.edit()){
+                    putString("email", "")
+                    putString("password", "")
+                    apply()
+                }
+                FirebaseAuth.getInstance().signOut(); //unauthorize current user out from firebase
+                finishAffinity()
+                startActivity(Intent(this, AccessActivity::class.java))
             }
 
             builder.setNegativeButton("Cancel") { dialog, which ->

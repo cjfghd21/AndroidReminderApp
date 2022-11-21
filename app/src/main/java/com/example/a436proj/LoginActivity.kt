@@ -1,8 +1,10 @@
 package com.example.a436proj
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.content.Intent
+import android.content.SharedPreferences
 import android.text.TextUtils
 import android.view.View
 import android.widget.Toast
@@ -26,13 +28,23 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var oneTapClient: GoogleSignInClient
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var binding: ActivityLoginBinding
-    private val REQ_ONE_TAP = 2
+    private val reqOneTap = 2
+    private lateinit var pref : SharedPreferences
     private val database = Firebase.database
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        pref = getSharedPreferences("Credentials", Context.MODE_PRIVATE) //shared ref
+        with(pref.edit()){
+            putString("email", "")
+            putString("password", "")
+            apply()
+        }
+
+
 
         supportActionBar!!.title = "Login"
 
@@ -88,6 +100,14 @@ class LoginActivity : AppCompatActivity() {
                val dbRef = database.getReference("User")
                dbRef.child(firebaseAuth.uid!!).child("email").get() //getting email from database <- need to change to data once we know which data are going to be stored.
                //update viewModel values with data retrieved.
+
+               //write to shared pref current credential
+               with(pref.edit()){
+                   putString("email", email)
+                   putString("password", password)
+                   apply()
+               }
+
                startActivity(Intent(this, GroupActivity::class.java))
                finishAffinity()
            }else{
@@ -102,13 +122,13 @@ class LoginActivity : AppCompatActivity() {
 
     private fun loginGoogle(){
         val signInIntent = oneTapClient.signInIntent
-        startActivityForResult(signInIntent, REQ_ONE_TAP)
+        startActivityForResult(signInIntent, reqOneTap)
     }
 
     override fun onActivityResult(requestCode: Int , result: Int, data: Intent?){
         super.onActivityResult(requestCode, result, data)
         when (requestCode) {
-            REQ_ONE_TAP -> {
+            reqOneTap -> {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                 try {
                     val account = task.getResult(ApiException::class.java)!!
@@ -125,6 +145,23 @@ class LoginActivity : AppCompatActivity() {
                                             "Login Success",
                                             Toast.LENGTH_LONG
                                         ).show()
+                                        val dbRef = database.getReference("User")
+                                        val use = RegistrationActivity.User(firebaseAuth.uid, "password")
+                                        dbRef.child(firebaseAuth.uid!!).setValue(use)
+
+
+
+                                        val email = dbRef.child(firebaseAuth.uid!!).child("email").get().toString()
+                                        val password = dbRef.child(firebaseAuth.uid!!).child("password").get().toString()
+
+
+                                        //write to shared pref current credential
+                                        with(pref.edit()){
+                                            putString("email", email)
+                                            putString("password", password)
+                                            apply()
+                                        }
+
                                         startActivity(Intent(this, GroupActivity::class.java))
                                         finishAffinity()
 
