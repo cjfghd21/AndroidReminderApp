@@ -149,4 +149,6 @@ class GroupActivity : AppCompatActivity() {
 
         return true
     }
+    override fun onBackPressed() {
+    }
 }
