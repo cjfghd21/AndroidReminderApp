@@ -53,14 +53,15 @@ class GroupActivity : AppCompatActivity() {
 
         groupRV.settingsClickListener = GroupRecyclerViewAdapter.OnSettingsClickListener { model, position ->
             var groupSettingsIntent = Intent(this, GroupSettingsActivity::class.java)
+            groupSettingsIntent.putExtra("groupName", model.groupParent.groupName)
             groupSettingsIntent.putExtra("contactsList",  (model.groupParent.contacts as Serializable))
             groupSettingsIntent.putExtra("groupIndex", position)
             startActivityForResult(groupSettingsIntent, 0)
         }
 
-        viewModel.groups.observe(this) {
+        /*viewModel.groups.observe(this) {
             groupRV.updateGroupModelList(viewModel.groups.value!!)
-        }
+        }*/
     }
 
     override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
@@ -71,9 +72,10 @@ class GroupActivity : AppCompatActivity() {
                 groupRV.updateGroupModelList(viewModel.groups.value!!)
             }
 
-            if (resultCode == RESULT_CANCELED) {
-                viewModel.groups.value!!.removeAt(data?.extras?.get("groupIndex") as Int)
-                groupRV.updateGroupModelList(viewModel.groups.value!!)
+            if (resultCode == 1) {
+                var index = data?.extras?.get("groupIndex") as Int
+                viewModel.groups.value!!.removeAt(index)
+                groupRV.updateGroupModelList(viewModel.groups.value!!, true, index)
             }
         }
     }

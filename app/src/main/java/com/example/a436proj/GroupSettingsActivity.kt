@@ -146,12 +146,12 @@ class GroupSettingsActivity : AppCompatActivity() {
 
         if (id == R.id.delete_group_button) {
             var builder = AlertDialog.Builder(this)
-            builder.setTitle("Delete Group?")
+            builder.setTitle("Delete Group: ${intent.extras?.get("groupName")}?")
 
             builder.setPositiveButton("Delete") { dialog, which ->
                 var deleteIntent = Intent()
                 deleteIntent.putExtra("groupIndex", groupIndex)
-                setResult(RESULT_CANCELED, deleteIntent)
+                setResult(1, deleteIntent)
                 finish()
             }
 

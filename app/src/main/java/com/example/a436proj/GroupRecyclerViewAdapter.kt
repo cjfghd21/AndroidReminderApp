@@ -133,6 +133,10 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
     }
 
     private fun collapseRow(position: Int){
+        if (groupModelList.size == 0) {
+            return
+        }
+
         val row = groupModelList[position]
         var nextPosition = position + 1
         when (row.type) {
@@ -152,11 +156,27 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
 
                 notifyDataSetChanged()
             }
+
+            ExpandableGroupModel.CHILD -> {
+                nextPosition = position
+                while (true) {
+                    if (nextPosition == groupModelList.size || groupModelList[nextPosition].type == ExpandableGroupModel.PARENT) {
+                        break
+                    }
+
+                    groupModelList.removeAt(nextPosition)
+                }
+
+                notifyDataSetChanged()
+            }
         }
     }
 
-    fun updateGroupModelList(newList : MutableList<ExpandableGroupModel>) {
+    fun updateGroupModelList(newList : MutableList<ExpandableGroupModel>, shouldCollapse : Boolean = false, previousGroupIndex : Int = 0) {
         groupModelList = newList
+        if (shouldCollapse) {
+            collapseRow(previousGroupIndex)
+        }
         notifyDataSetChanged()
     }
 
