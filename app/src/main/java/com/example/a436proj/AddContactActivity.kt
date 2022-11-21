@@ -105,6 +105,8 @@ class AddContactActivity : AppCompatActivity() {
             ourIntent.putExtra("OurData", contactLists as Serializable ) // pass our contactList.
             setResult(123, ourIntent)*/
 
+            //Once above is implemented i'll add checked returning list of items into database -Chris-
+
             finish()
 
         }
