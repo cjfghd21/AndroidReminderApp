@@ -95,10 +95,10 @@ class GroupSettingsActivity : AppCompatActivity() {
             binding.checkAllCheckbox.isChecked = it
         }
 
-        val notificationsRV = GroupSettingsNotificationsRecyclerViewAdapter(this, notificationsList).also {
-            binding.notificationsRecyclerView.adapter = it
-            binding.notificationsRecyclerView.setHasFixedSize(true)
-        }
+//        val notificationsRV = GroupSettingsNotificationsRecyclerViewAdapter(this, notificationsList).also {
+//            binding.notificationsRecyclerView.adapter = it
+//            binding.notificationsRecyclerView.setHasFixedSize(true)
+//        }
 
         contactsRV = GroupSettingsContactRecyclerViewAdapter(this, viewModel.contactsList.value!!, viewModel::tickCheckBox).also {
             binding.contactsRecyclerView.adapter = it
@@ -130,6 +130,11 @@ class GroupSettingsActivity : AppCompatActivity() {
             intent.putExtra("groupIndex", groupIndex)
             setResult(RESULT_OK, intent)
         }
+
+        // button for setting the notification/reminder timer specific for this group
+//        binding.set_notification_btn.setOnClickListener {
+//            // do what is necessary.
+//        }
 
     }
 }
