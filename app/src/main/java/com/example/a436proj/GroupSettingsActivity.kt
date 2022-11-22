@@ -22,7 +22,7 @@ class GroupSettingsActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == 0) {
-            if (resultCode == 0) {
+            if (resultCode == 1) {
                 //For Chris: resultList is the contacts that are being added to the group
                 var resultList = data?.extras?.get("newContactsList") as MutableList<SelectableGroups.Group.Contact>
                 for (i in 0 until resultList.size) {

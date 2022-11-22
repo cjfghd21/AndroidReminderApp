@@ -85,13 +85,12 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
                         holder.contactContainer.setBackgroundResource(R.drawable.group_item_expanded_border_background)
                     }
                 }
-                //For Anthony: Put call code here
+
                 holder.callButton.setOnClickListener {
                     companionPhoneNumber = row.groupChild.phoneNumber
                     requestCallPermissionLauncher.launch("android.permission.CALL_PHONE")
                 }
 
-                //For Anthony: Put message code here
                 holder.messageButton.setOnClickListener {
                     companionPhoneNumber = row.groupChild.phoneNumber
 
