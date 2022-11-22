@@ -94,7 +94,9 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
                 //For Anthony: Put message code here
                 holder.messageButton.setOnClickListener {
                     companionPhoneNumber = row.groupChild.phoneNumber
-                    requestTextPermissionLauncher.launch("android.permission.SEND_SMS")
+
+                    var textIntent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:$companionPhoneNumber"))
+                    startActivity(context, textIntent, null)
                 }
             }
         }
@@ -116,29 +118,6 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
     private fun dialPhoneNumber(phoneNumber : String) {
         val intent = Intent("android.intent.action.CALL");
         intent.data = Uri.parse("tel:$phoneNumber");
-
-        intent.resolveActivity(groupActivity.packageManager)?.let {
-            startActivity(context, intent, null);
-        }
-    }
-
-    private val requestTextPermissionLauncher: ActivityResultLauncher<String> =
-        groupActivity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                textPhoneNumber(companionPhoneNumber);
-            } else {
-                Toast.makeText(
-                    context,
-                    "Need permission to open messaging app.",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-
-    private fun textPhoneNumber(phoneNumber : String) {
-        Log.d("sada", "textPhoneNumber called")
-        val intent = Intent(Intent.ACTION_VIEW);
-        intent.data = Uri.parse("sms:");
 
         intent.resolveActivity(groupActivity.packageManager)?.let {
             startActivity(context, intent, null);
