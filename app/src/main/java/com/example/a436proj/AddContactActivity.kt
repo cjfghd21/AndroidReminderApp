@@ -36,6 +36,7 @@ class AddContactActivity : AppCompatActivity() {
     private lateinit var binding : ActivityAddContactBinding
     private lateinit var contactAdapter : ContactAdapter
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
          binding = ActivityAddContactBinding.inflate(layoutInflater)
