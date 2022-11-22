@@ -23,15 +23,20 @@ class GroupSettingsActivity : AppCompatActivity() {
 
         if (requestCode == 0) {
             if (resultCode == 0) {
+                //For Chris: resultList is the contacts that are being added to the group
                 var resultList = data?.extras?.get("newContactsList") as MutableList<SelectableGroups.Group.Contact>
                 for (i in 0 until resultList.size) {
                     viewModel.contactsList.value!!.add(resultList[i])
                 }
 
                 contactsRV.updateContactsList(viewModel.contactsList.value!!)
-                intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
-                intent.putExtra("groupIndex", groupIndex)
-                setResult(RESULT_OK, intent)
+
+                val resultIntent = Intent()
+                resultIntent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
+                resultIntent.putExtra("groupIndex", groupIndex)
+                setResult(RESULT_OK, resultIntent)
+
+                //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
 
             }
         }
@@ -127,12 +132,18 @@ class GroupSettingsActivity : AppCompatActivity() {
         }
 
         binding.deleteButton.setOnClickListener {
+            //For Chris: This button deletes from the viewModel all of the contacts that have the value groupSettingsChecked = true
+            //Then we update the RecyclerView. After we do that, we create a new Intent and add the resulting contacts list
+            //to the intent, as well as the groupIndex that was passed to this activity. Then we set the result using the
+            //result code RESULT_OK and the intent we created
             viewModel.deleteChecked()
             contactsRV.updateContactsList(viewModel.contactsList.value!!)
             val intent = Intent()
             intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
             intent.putExtra("groupIndex", groupIndex)
             setResult(RESULT_OK, intent)
+
+            //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
         }
     }
 
