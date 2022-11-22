@@ -10,6 +10,7 @@ import android.text.InputType
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
@@ -49,13 +50,14 @@ class GroupActivity : AppCompatActivity() {
             viewModel.groupsInitialzed.value = true
         }
 
-        groupRV = GroupRecyclerViewAdapter(this, list).also {
+        groupRV = GroupRecyclerViewAdapter(this, list, this).also {
             binding.list.adapter = it
             binding.list.setHasFixedSize(true)
         }
 
         groupRV.settingsClickListener = GroupRecyclerViewAdapter.OnSettingsClickListener { model, position ->
             var groupSettingsIntent = Intent(this, GroupSettingsActivity::class.java)
+            groupSettingsIntent.putExtra("groupName", model.groupParent.groupName)
             groupSettingsIntent.putExtra("contactsList",  (model.groupParent.contacts as Serializable))
             groupSettingsIntent.putExtra("groupIndex", position)
             startActivityForResult(groupSettingsIntent, 0)
@@ -70,13 +72,22 @@ class GroupActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 0) {
             if (resultCode == RESULT_OK) {
+                //For Chris: This if block is what gets run if the GroupSettingsActivity returns normally using the back button
+                //We update the viewModel's groups list at the groupIndex that we get from the GroupSettingsActivity with the
+                //new value of the contacts that we got from the GroupSettingsActivity. Then we update the RecyclerView
                 viewModel.groups.value!![data?.extras?.get("groupIndex") as Int].groupParent.contacts = data?.extras?.get("resultContactsList") as MutableList<SelectableGroups.Group.Contact>
                 groupRV.updateGroupModelList(viewModel.groups.value!!)
             }
 
-            if (resultCode == RESULT_CANCELED) {
-                viewModel.groups.value!!.removeAt(data?.extras?.get("groupIndex") as Int)
-                groupRV.updateGroupModelList(viewModel.groups.value!!)
+            if (resultCode == 1) {
+                //For Chris: This block of code is what gets run if the group has been deleted.
+                //Here we update the viewModel by removing the group in the groups list at the index received from
+                //the GroupSettingsActivity. Then we update the RecyclerView
+                var index = data?.extras?.get("groupIndex") as Int
+                viewModel.groups.value!!.removeAt(index)
+                groupRV.updateGroupModelList(viewModel.groups.value!!, true, index)
+
+                //For Chris: Connect the back end here. Update firebase with the new value of viewModel.groups.value!!
             }
         }
     }
@@ -99,9 +110,24 @@ class GroupActivity : AppCompatActivity() {
             builder.setView(inputEditText)
 
             builder.setPositiveButton("Add Group") { dialog, which ->
-                viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
-                    SelectableGroups.Group(inputEditText.text.toString(),
-                        mutableListOf<SelectableGroups.Group.Contact>())))
+                if(inputEditText.text.toString() == "") {
+                    Toast.makeText(
+                        this,
+                        "Group name can't be empty.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                else {
+                    //For Chris: Here we create a new group within the add() call and update the viewModel's list
+                    //of groups. Then we update the RecyclerView using groupRV.updateGroupModelList() with the
+                    //new value of the viewModel.groups
+                    viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
+                        SelectableGroups.Group(inputEditText.text.toString(),
+                            mutableListOf<SelectableGroups.Group.Contact>())))
+                    groupRV.updateGroupModelList(viewModel.groups.value!!)
+
+                    //For Chris: Connect the back end here. Update firebase with the new value of viewModel.groups.value!!
+                }
             }
 
             builder.setNegativeButton("Cancel") { dialog, which ->
@@ -136,5 +162,7 @@ class GroupActivity : AppCompatActivity() {
 
 
         return true
+    }
+    override fun onBackPressed() {
     }
 }

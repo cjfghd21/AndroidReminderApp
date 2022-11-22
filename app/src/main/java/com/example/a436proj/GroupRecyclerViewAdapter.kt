@@ -3,6 +3,7 @@ package com.example.a436proj
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,13 +14,17 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.startActivityForResult
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.a436proj.databinding.ExpandableGroupChildBinding
 import com.example.a436proj.databinding.ExpandableGroupParentBinding
 import java.io.Serializable
+import android.content.pm.PackageManager
 
-class GroupRecyclerViewAdapter(var context: Context, var groupModelList : MutableList<ExpandableGroupModel>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+class GroupRecyclerViewAdapter(var context: Context, var groupModelList : MutableList<ExpandableGroupModel>, var groupActivity : AppCompatActivity) : RecyclerView.Adapter<RecyclerView.ViewHolder>()  {
 
     var settingsClickListener : OnSettingsClickListener? = null
 
@@ -37,21 +42,6 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
     }
 
     override fun getItemCount(): Int = groupModelList.size
-
-    /*private val requestPermissionLauncher: ActivityResultLauncher<String> =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
-            //TODO: Dial the phone number if the permission has been granted.
-            if (isGranted) {
-                dialPhoneNumber();
-            } else {
-                Toast.makeText(
-                    this, getString(R.string.need_permission_string),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }*/
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val row = groupModelList[position]
@@ -95,16 +85,41 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
                         holder.contactContainer.setBackgroundResource(R.drawable.group_item_expanded_border_background)
                     }
                 }
-                //For Anthony: Put call code here
-                holder.callButton.setOnClickListener {
 
+                holder.callButton.setOnClickListener {
+                    companionPhoneNumber = row.groupChild.phoneNumber
+                    requestCallPermissionLauncher.launch("android.permission.CALL_PHONE")
                 }
 
-                //For Anthony: Put message code here
                 holder.messageButton.setOnClickListener {
+                    companionPhoneNumber = row.groupChild.phoneNumber
 
+                    var textIntent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:$companionPhoneNumber"))
+                    startActivity(context, textIntent, null)
                 }
             }
+        }
+    }
+
+    private val requestCallPermissionLauncher: ActivityResultLauncher<String> =
+        groupActivity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                dialPhoneNumber(companionPhoneNumber);
+            } else {
+                Toast.makeText(
+                    context,
+                    "Need permission to make phone calls.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+    private fun dialPhoneNumber(phoneNumber : String) {
+        val intent = Intent("android.intent.action.CALL");
+        intent.data = Uri.parse("tel:$phoneNumber");
+
+        intent.resolveActivity(groupActivity.packageManager)?.let {
+            startActivity(context, intent, null);
         }
     }
 
@@ -133,6 +148,10 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
     }
 
     private fun collapseRow(position: Int){
+        if (groupModelList.size == 0) {
+            return
+        }
+
         val row = groupModelList[position]
         var nextPosition = position + 1
         when (row.type) {
@@ -152,11 +171,27 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
 
                 notifyDataSetChanged()
             }
+
+            ExpandableGroupModel.CHILD -> {
+                nextPosition = position
+                while (true) {
+                    if (nextPosition == groupModelList.size || groupModelList[nextPosition].type == ExpandableGroupModel.PARENT) {
+                        break
+                    }
+
+                    groupModelList.removeAt(nextPosition)
+                }
+
+                notifyDataSetChanged()
+            }
         }
     }
 
-    fun updateGroupModelList(newList : MutableList<ExpandableGroupModel>) {
+    fun updateGroupModelList(newList : MutableList<ExpandableGroupModel>, shouldCollapse : Boolean = false, previousGroupIndex : Int = 0) {
         groupModelList = newList
+        if (shouldCollapse) {
+            collapseRow(previousGroupIndex)
+        }
         notifyDataSetChanged()
     }
 
@@ -180,5 +215,9 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
         internal var phoneNumber = binding.phoneNumber
         internal var reminderText = binding.reminderText
 
+    }
+
+    companion object {
+        private var companionPhoneNumber = ""
     }
 }

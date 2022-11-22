@@ -93,7 +93,7 @@ class AddContactActivity : AppCompatActivity() {
             }
 
             intent.putExtra("newContactsList", resultList as Serializable)
-            setResult(0, intent)
+            setResult(1, intent)
 
             // get the checkedList and filter our result
             /*val returnedCheckedList = contactAdapter.getCheckedList()
