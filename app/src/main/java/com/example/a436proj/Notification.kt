@@ -5,23 +5,19 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
 
 const val channelID = "channel1"
 const val notificationID = 1
-const val interval = "interval"
+const val content = "content"
 
 class Notification : BroadcastReceiver()
 {
     override fun onReceive(context: Context, intent: Intent) {
-        System.out.println("received sth")
-
         val notification = NotificationCompat.Builder(context, channelID)
             .setSmallIcon(android.R.drawable.stat_sys_warning)
             .setAutoCancel(true)
             .setContentTitle(getContentTitle(intent))
             .setContentText(getContentText(intent))
-            .setVisibility(VISIBILITY_PUBLIC)
             .build()
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -29,10 +25,10 @@ class Notification : BroadcastReceiver()
     }
 
     private fun getContentTitle(intent: Intent): String {
-        return "For now Title"
+        return "Reminder to send notification"
     }
 
     private fun getContentText(intent: Intent): String {
-        return "For now text"
+        return intent.getStringExtra(content)!!
     }
 }

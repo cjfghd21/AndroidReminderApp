@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.InputType
+import android.text.format.DateFormat
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
@@ -19,7 +20,12 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupBinding
 import com.google.firebase.auth.FirebaseAuth
 import java.io.Serializable
+import java.sql.Time
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.*
+
 
 class GroupActivity : AppCompatActivity() {
 
@@ -97,7 +103,7 @@ class GroupActivity : AppCompatActivity() {
                 var interval = data?.extras?.get("interval") as? Interval
                 if (interval != null) {
                     groupIdToInterval[index] = interval
-                    scheduleNotification(interval)
+                    scheduleNotification(index, interval)
                 }
             }
 
@@ -190,8 +196,8 @@ class GroupActivity : AppCompatActivity() {
     }
 
     private fun creationNotificationChannel() {
-        val name = "Notif Channel"
-        val desc = "des"
+        val name = "Notification Channel"
+        val desc = "description"
         val importance = NotificationManager.IMPORTANCE_DEFAULT
         val channel = NotificationChannel(channelID, name, importance)
         channel.description = desc
@@ -200,8 +206,9 @@ class GroupActivity : AppCompatActivity() {
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun scheduleNotification(interval: Interval) {
+    private fun scheduleNotification(groupIndex: Int, interval: Interval) {
         val intent = Intent(applicationContext, Notification::class.java)
+        intent.putExtra(content, String.format("Send notification to group %d", groupIndex))
         val pendingIntent = PendingIntent.getBroadcast(
             applicationContext,
             notificationID,
@@ -217,33 +224,65 @@ class GroupActivity : AppCompatActivity() {
             time,
             pendingIntent
         )
-        System.out.println("schedule done")
-        System.out.println(System.currentTimeMillis())
-        System.out.println(time)
-//        showAlert(time, "title", "message")
+        showAlert(interval)
     }
 
     private fun getTime(interval: Interval): Long {
-        val minute = interval.timeToSendNotification.minutes
-        val hour = interval.timeToSendNotification.hours
-        val date = 22
-        val month = 10
-        val year = 2022
-        val calendar = Calendar.getInstance()
-        calendar.set(year, month, date, hour, minute)
-        System.out.println(calendar.toString())
+        val minute = interval.timeToSendNotification.minute
+        val hour = interval.timeToSendNotification.hour
+        val calendar = getCalendar(interval)
+        calendar.set(Calendar.MINUTE, minute)
+        calendar.set(Calendar.HOUR_OF_DAY, hour)
         return calendar.timeInMillis
     }
 
-//    private fun showAlert(time: Long, title: String, message: String) {
-//        val date = Date(time)
-//        val dateFormat = DateFormat.getLongDateFormat(applicationContext)
-//        val timeFormat = DateFormat.getTimeFormat(applicationContext)
-//
-//        AlertDialog.Builder(this)
-//            .setTitle("ddd")
-//            .setMessage("awef")
-//            .setPositiveButton("Okay"){_,_ ->}
-//            .show()
-//    }
+    private fun getCalendar(interval: Interval): Calendar {
+        var current = LocalDateTime.now()
+
+        when(interval.intervalType) {
+            IntervalType.Daily -> {
+                if (current.toLocalTime().isAfter(interval.timeToSendNotification)) {
+                    current = current.plusDays(1)
+                }
+            }
+            IntervalType.Weekly -> {
+                if (current.dayOfWeek > interval.weeklyInterval.day) {
+                    current = current.plusDays((interval.weeklyInterval.day.value - current.dayOfWeek.value + 7).toLong())
+                } else if (current.dayOfWeek < interval.weeklyInterval.day) {
+                    current = current.plusDays((interval.weeklyInterval.day.value - current.dayOfWeek.value).toLong())
+                } else {
+                    if (current.toLocalTime().isAfter(interval.timeToSendNotification)) {
+                        current = current.plusDays(7)
+                    }
+                }
+            }
+            IntervalType.Monthly -> {
+                // implement
+            }
+        }
+
+        val date = current.dayOfMonth
+        val month = current.monthValue
+        val year = current.year
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month - 1, date)
+        return calendar
+    }
+
+    private fun showAlert(interval: Interval) {
+        AlertDialog.Builder(this)
+            .setTitle("Notification Scheduled")
+            .setMessage(getAlertMessage(interval))
+            .setPositiveButton("Okay"){_,_ ->}
+            .show()
+    }
+
+    private fun getAlertMessage(interval: Interval): String {
+        val time = interval.timeToSendNotification.format(DateTimeFormatter.ISO_TIME)
+        return when(interval.intervalType){
+            IntervalType.Daily -> String.format("Daily Notification is scheduled at %s", time)
+            IntervalType.Weekly-> String.format("Weekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+            IntervalType.Monthly -> String.format("Monthly Notification is scheduled at %dth %s", interval.monthlyInterval.date, time)
+        }
+    }
 }

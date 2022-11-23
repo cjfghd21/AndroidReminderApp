@@ -30,10 +30,9 @@ class GroupSettingsActivity : AppCompatActivity() {
                 }
 
                 contactsRV.updateContactsList(viewModel.contactsList.value!!)
-                val resultIntent = Intent()
-                resultIntent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
-                resultIntent.putExtra("groupIndex", groupIndex)
-                setResult(RESULT_OK, resultIntent)
+                intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
+                intent.putExtra("groupIndex", groupIndex)
+                setResult(RESULT_OK, intent)
 
                 //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
             }
@@ -43,9 +42,8 @@ class GroupSettingsActivity : AppCompatActivity() {
                 intent.putExtra("interval", interval as Serializable)
                 intent.putExtra("groupIndex", groupIndex)
                 setResult(RESULT_OK, intent)
-            } else {
-                return
             }
+            return
         }
 
        /* data?.getSerializableExtra("OurData").also { contactsLists = it as MutableList<SelectableGroups.Group.Contact> }

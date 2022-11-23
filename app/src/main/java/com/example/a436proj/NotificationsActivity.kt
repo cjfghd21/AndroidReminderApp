@@ -12,6 +12,8 @@ import com.example.a436proj.databinding.ActivityNotificationsBinding
 import java.io.Serializable
 import java.sql.Time
 import java.time.DayOfWeek
+import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlin.time.TimeSource
 
 class NotificationsActivity : AppCompatActivity() {
@@ -45,7 +47,8 @@ class NotificationsActivity : AppCompatActivity() {
         }
 
         binding.radioButton2.setOnClickListener {
-            viewModel.setWeeklyInterval(DayOfWeek.MONDAY)
+            // default to Monday for now
+            viewModel.setWeeklyInterval(DayOfWeek.WEDNESDAY)
         }
 
         binding.radioButton3.setOnClickListener {
@@ -58,8 +61,8 @@ class NotificationsActivity : AppCompatActivity() {
         if (sendData) {
             val intent = Intent()
             var interval: Interval = viewModel.getInterval()
-            interval.timeToSendNotification = Time(timePicker.hour, timePicker.minute, 0)
-            interval.lastUpdateTimestamp = System.currentTimeMillis();
+            interval.timeToSendNotification = LocalTime.of(timePicker.hour, timePicker.minute, 0)
+            interval.lastUpdateTimestamp = LocalDateTime.now()
             intent.putExtra("interval", interval as Serializable)
             setResult(RESULT_OK, intent)
         }
