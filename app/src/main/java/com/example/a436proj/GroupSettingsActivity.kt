@@ -1,12 +1,12 @@
 package com.example.a436proj
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupSettingsBinding
 import java.io.Serializable
@@ -30,14 +30,21 @@ class GroupSettingsActivity : AppCompatActivity() {
                 }
 
                 contactsRV.updateContactsList(viewModel.contactsList.value!!)
-
                 val resultIntent = Intent()
                 resultIntent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
                 resultIntent.putExtra("groupIndex", groupIndex)
                 setResult(RESULT_OK, resultIntent)
 
                 //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
-
+            }
+        } else if (requestCode == NotificationsActivity.requestCode) {
+            if (resultCode == RESULT_OK) {
+                var interval = data?.extras?.get("interval") as Interval
+                intent.putExtra("interval", interval as Serializable)
+                intent.putExtra("groupIndex", groupIndex)
+                setResult(RESULT_OK, intent)
+            } else {
+                return
             }
         }
 
@@ -145,6 +152,11 @@ class GroupSettingsActivity : AppCompatActivity() {
 
             //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
         }
+
+        binding.setNotificationBtn.setOnClickListener {
+            var notificationIntent = Intent(this, NotificationsActivity::class.java)
+            startActivityForResult(notificationIntent, NotificationsActivity.requestCode)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -172,11 +184,6 @@ class GroupSettingsActivity : AppCompatActivity() {
 
             builder.show()
         }
-
-        // button for setting the notification/reminder timer specific for this group
-//        binding.set_notification_btn.setOnClickListener {
-//            // do what is necessary.
-//        }
 
         return true
     }
