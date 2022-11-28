@@ -10,6 +10,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.InputType
 import android.text.format.DateFormat
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
@@ -19,6 +20,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import java.io.Serializable
 import java.sql.Time
 import java.time.LocalDateTime
@@ -35,10 +38,14 @@ class GroupActivity : AppCompatActivity() {
     private lateinit var pref: SharedPreferences
     private lateinit var binding: ActivityGroupBinding
     private var groupIdToInterval: MutableMap<Int, Interval> = mutableMapOf()
+    private val database = Firebase.database
+    //private val dbRef = database.getReference("contacts")
+    //private lateinit var firebaseAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
 
+        super.onCreate(savedInstanceState)
+        //firebaseAuth = requireNotNull(FirebaseAuth.getInstance())
         binding = ActivityGroupBinding.inflate(layoutInflater)
 
         supportActionBar!!.title = "Groups"
@@ -57,15 +64,37 @@ class GroupActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[GroupViewModel::class.java]
 
+        groupRV = GroupRecyclerViewAdapter(this, list, this).also {
+            binding.list.adapter = it
+            binding.list.setHasFixedSize(true)
+        }
+
+        viewModel.groups.observe(this) {
+            viewModel.groups// update changed group to firebase.
+            groupRV.updateGroupModelList(viewModel.groups.value!!)
+
+        }
+
+/*
+        dbRef.child(firebaseAuth.uid!!).get().addOnCompleteListener{task->
+            if(task.isSuccessful){
+                val result  =task.result.value // group data.
+                Log.i("firebase", "Got value $result")
+                if (result != null){ // value found initialize.
+                    viewModel.groupsInitialzed.value = true
+                    viewModel.groups.value = result as MutableList<ExpandableGroupModel>?
+                }
+            }else{
+                Log.e("firebase", "Error getting data")
+            }
+        }
+*/
         if (!viewModel.groupsInitialzed.value!!) {
             viewModel.groups.value = list
             viewModel.groupsInitialzed.value = true
         }
 
-        groupRV = GroupRecyclerViewAdapter(this, list, this).also {
-            binding.list.adapter = it
-            binding.list.setHasFixedSize(true)
-        }
+
 
         groupRV.settingsClickListener = GroupRecyclerViewAdapter.OnSettingsClickListener { model, position ->
             var groupSettingsIntent = Intent(this, GroupSettingsActivity::class.java)
@@ -75,9 +104,7 @@ class GroupActivity : AppCompatActivity() {
             startActivityForResult(groupSettingsIntent, 0)
         }
 
-        viewModel.groups.observe(this) {
-            groupRV.updateGroupModelList(viewModel.groups.value!!)
-        }
+
 
         // setup notification channel
         creationNotificationChannel()
@@ -85,6 +112,8 @@ class GroupActivity : AppCompatActivity() {
         // fetch related Intervals from firebase for each Group and fill "groupIdToInterval"
         // then schedule notification
     }
+
+
 
     override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -98,6 +127,7 @@ class GroupActivity : AppCompatActivity() {
                 if (contacts != null) {
                     viewModel.groups.value!![index].groupParent.contacts = contacts
                     groupRV.updateGroupModelList(viewModel.groups.value!!)
+                    //dbRef.child(firebaseAuth.uid!!).setValue(viewModel.groups.value)
                 }
 
                 var interval = data?.extras?.get("interval") as? Interval
@@ -119,6 +149,7 @@ class GroupActivity : AppCompatActivity() {
             }
         }
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.add_menu, menu)
