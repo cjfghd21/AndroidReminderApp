@@ -82,21 +82,28 @@ class GroupActivity : AppCompatActivity() {
         firebaseAuth.currentUser?.let {
             dbRef.child(it.uid).get().addOnCompleteListener{ task->
                 if(task.isSuccessful){
-                    val result  =task.result.value as HashMap<String, MutableList<SelectableGroups.Group.Contact>>
-                    Log.i("firebase", "Got value $result in Group Activity")
-                    Log.i("firebase user", "User is ${it.uid}")
-                    var index =0
-                    result.forEach{ entry ->
-                        Log.i("Result", "${entry.key} : ${entry.value}")
-                        viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
-                            SelectableGroups.Group(entry.key.toString(),
-                                mutableListOf<SelectableGroups.Group.Contact>())))
-                        groupRV.updateGroupModelList(viewModel.groups.value!!)
-                        if (entry.value != null) {
+                    if(task.result.value != null) {
+                        val result = task.result.value as HashMap<String, MutableList<SelectableGroups.Group.Contact>>
+                        Log.i("firebase", "Got value $result in Group Activity")
+                        Log.i("firebase user", "User is ${it.uid}")
+                        var index = 0
+                        result.forEach { entry ->
+                            Log.i("Result", "${entry.key} : ${entry.value}")
+                            viewModel.groups.value!!.add(
+                                ExpandableGroupModel(
+                                    ExpandableGroupModel.PARENT,
+                                    SelectableGroups.Group(
+                                        entry.key.toString().substring(1),
+                                        mutableListOf<SelectableGroups.Group.Contact>()
+                                    )
+                                )
+                            )
+                            groupRV.updateGroupModelList(viewModel.groups.value!!)
+                            //if (entry.value != null) {
                             //need to parse the values as contact list to update group activity viewmodel.
                             //see above log for what the data looks like
-                        }
-                        /*
+                            //}
+                            /*
                         if (contacts != null) {
                             viewModel.groups.value!![index].groupParent.contacts = contacts
                             groupRV.updateGroupModelList(viewModel.groups.value!!)
@@ -104,8 +111,8 @@ class GroupActivity : AppCompatActivity() {
                                 index++
                             }
                         }*/
+                        }
                     }
-
 
 
                 }else{
