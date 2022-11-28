@@ -20,6 +20,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.Query
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import java.io.Serializable
@@ -28,6 +30,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.collections.HashMap
 
 
 class GroupActivity : AppCompatActivity() {
@@ -39,13 +42,13 @@ class GroupActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGroupBinding
     private var groupIdToInterval: MutableMap<Int, Interval> = mutableMapOf()
     private val database = Firebase.database
-    //private val dbRef = database.getReference("contacts")
-    //private lateinit var firebaseAuth: FirebaseAuth
+    private val dbRef = database.getReference("contacts")
+    private lateinit var firebaseAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        //firebaseAuth = requireNotNull(FirebaseAuth.getInstance())
+        firebaseAuth = requireNotNull(FirebaseAuth.getInstance())
         binding = ActivityGroupBinding.inflate(layoutInflater)
 
         supportActionBar!!.title = "Groups"
@@ -70,25 +73,48 @@ class GroupActivity : AppCompatActivity() {
         }
 
         viewModel.groups.observe(this) {
-            viewModel.groups// update changed group to firebase.
             groupRV.updateGroupModelList(viewModel.groups.value!!)
+            Log.e("vieModel", "viweModel changed ${viewModel.groups.value!!}")
 
         }
 
-/*
-        dbRef.child(firebaseAuth.uid!!).get().addOnCompleteListener{task->
-            if(task.isSuccessful){
-                val result  =task.result.value // group data.
-                Log.i("firebase", "Got value $result")
-                if (result != null){ // value found initialize.
-                    viewModel.groupsInitialzed.value = true
-                    viewModel.groups.value = result as MutableList<ExpandableGroupModel>?
+
+        firebaseAuth.currentUser?.let {
+            dbRef.child(it.uid).get().addOnCompleteListener{ task->
+                if(task.isSuccessful){
+                    val result  =task.result.value as HashMap<String, MutableList<SelectableGroups.Group.Contact>>
+                    Log.i("firebase", "Got value $result in Group Activity")
+                    Log.i("firebase user", "User is ${it.uid}")
+                    var index =0
+                    result.forEach{ entry ->
+                        Log.i("Result", "${entry.key} : ${entry.value}")
+                        viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
+                            SelectableGroups.Group(entry.key.toString(),
+                                mutableListOf<SelectableGroups.Group.Contact>())))
+                        groupRV.updateGroupModelList(viewModel.groups.value!!)
+                        if (entry.value != null) {
+                            //need to parse the values as contact list to update group activity viewmodel.
+                            //see above log for what the data looks like
+                        }
+                        /*
+                        if (contacts != null) {
+                            viewModel.groups.value!![index].groupParent.contacts = contacts
+                            groupRV.updateGroupModelList(viewModel.groups.value!!)
+                            for(i in contacts){
+                                index++
+                            }
+                        }*/
+                    }
+
+
+
+                }else{
+                    Log.e("firebase", "Error getting data")
                 }
-            }else{
-                Log.e("firebase", "Error getting data")
             }
         }
-*/
+
+
         if (!viewModel.groupsInitialzed.value!!) {
             viewModel.groups.value = list
             viewModel.groupsInitialzed.value = true
@@ -127,7 +153,9 @@ class GroupActivity : AppCompatActivity() {
                 if (contacts != null) {
                     viewModel.groups.value!![index].groupParent.contacts = contacts
                     groupRV.updateGroupModelList(viewModel.groups.value!!)
-                    //dbRef.child(firebaseAuth.uid!!).setValue(viewModel.groups.value)
+                    firebaseAuth.currentUser?.let {
+                        dbRef.child(it.uid).child(viewModel.groups.value!![index].groupParent.groupName).setValue(viewModel.groups.value!![index].groupParent.contacts)
+                    }
                 }
 
                 var interval = data?.extras?.get("interval") as? Interval
@@ -142,6 +170,10 @@ class GroupActivity : AppCompatActivity() {
                 //Here we update the viewModel by removing the group in the groups list at the index received from
                 //the GroupSettingsActivity. Then we update the RecyclerView
                 var index = data?.extras?.get("groupIndex") as Int
+                val name = viewModel.groups.value!![index].groupParent.groupName
+                firebaseAuth.currentUser?.let {
+                    dbRef.child(it.uid).child(name).removeValue()
+                }
                 viewModel.groups.value!!.removeAt(index)
                 groupRV.updateGroupModelList(viewModel.groups.value!!, true, index)
 
