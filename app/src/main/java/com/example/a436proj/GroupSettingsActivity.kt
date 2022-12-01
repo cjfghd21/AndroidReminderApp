@@ -28,6 +28,7 @@ class GroupSettingsActivity : AppCompatActivity() {
                 for (i in 0 until resultList.size) {
                     viewModel.contactsList.value!!.add(resultList[i])
                 }
+                Log.i("contacts value","viewModel is ${viewModel.contactsList.value!!!!::class.java.typeName}")
 
                 contactsRV.updateContactsList(viewModel.contactsList.value!!)
                 intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)

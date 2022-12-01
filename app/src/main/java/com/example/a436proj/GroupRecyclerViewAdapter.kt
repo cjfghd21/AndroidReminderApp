@@ -134,6 +134,8 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
         var nextPosition = position
         when (row.type) {
             ExpandableGroupModel.PARENT -> {
+                Log.i("recycler contact","parent contact is ${row.groupParent.contacts!!::class.java.typeName}")
+                Log.i("recycler contact","parent contact name ${row.groupParent.groupName!!::class.java.typeName}")
                 for(child in row.groupParent.contacts){
                     Log.d("Testing", child.name)
                     groupModelList.add(++nextPosition, ExpandableGroupModel(ExpandableGroupModel.CHILD, child))

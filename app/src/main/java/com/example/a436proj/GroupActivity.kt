@@ -17,6 +17,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -82,25 +83,54 @@ class GroupActivity : AppCompatActivity() {
 
 
         firebaseAuth.currentUser?.let {
+              viewModel.groups.value = list
               dbRef.child(it.uid).get().addOnCompleteListener(){ task->
                 if(task.isSuccessful){
                     if(task.result.value != null) {
-                        val result = task.result.value as HashMap<String, List<SelectableGroups.Group.Contact>>
-                        //val result  = task.result.getValue(SelectableGroups.Group::class.java)
+                        val result = task.result.value as Map<String, MutableList<Map<String,Any>>>
                         Log.i("firebase value", "Got value ${result!!::class.java.typeName} in Group Activity")
                         Log.i("firebase result", "User is $result")
-                        var index = 0
-                        result.forEach{entry ->
-                            /*var list : MutableList<SelectableGroups.Group.Contact> = mutableListOf()
-                            entry.value.forEach{contact->
-                                var element = SelectableGroups.Group.Contact(contact.name,contact.reminderText, contact.phoneNumber)
-                                list.add(element)
-                            }*/
+
+                        /*
+                        dbRef.child(it.uid).child("abc").get().addOnCompleteListener(){task2->
+                            if(task.isSuccessful){
+                                val res = task2.result.value as ArrayList<Any>
+                                val one = res[0] as Map<String,Any>
+                                one.forEach{(key,value)->
+                                    Log.i("key val", "$key $value")
+                                }
+
+                            }
+                        }*/
+                        result.forEach{(key,value) ->
+                            var contact : MutableList<SelectableGroups.Group.Contact> = mutableListOf()
+                            for (i in 0 until value.size){
+                                val new = SelectableGroups.Group.Contact("","","")
+                                value[i].forEach{(key,value)->
+                                    when(key){
+                                        "groupSettingsIsChecked" -> new.groupSettingsIsChecked = value as Boolean
+                                        "name" -> new.name = value as String
+                                        "phoneNumber"-> new.phoneNumber = value as String
+                                        "reminderText" -> new.reminderText = value as String
+                                    }
+                                }
+                                contact.add(new)
+                            }
+                            Log.i("contacts value","contacts is ${contact[0]!!::class.java.typeName}")
                             viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
-                                SelectableGroups.Group(entry.key,
-                                    mutableListOf())))
+                                SelectableGroups.Group(key,
+                                    contact)))
                             groupRV.updateGroupModelList(viewModel.groups.value!!)
+
+
+
+                            /*Log.i("contacts value","contacts is  $contact , ${contact::class.java.typeName}")
+                            viewModel.groups.value!![index].groupParent.contacts = contact
+                            groupRV.updateGroupModelList(viewModel.groups.value!!)
+                            Log.i("contacts value in viewmodel","contacts is  ${viewModel.groups.value!![index].groupParent.contacts}, ${viewModel.groups.value!![index].groupParent.contacts::class.java.typeName}")
+                            index++*/
                         }
+
                     }
 
                 }else{
@@ -149,7 +179,8 @@ class GroupActivity : AppCompatActivity() {
                     viewModel.groups.value!![index].groupParent.contacts = contacts
                     groupRV.updateGroupModelList(viewModel.groups.value!!)
                     firebaseAuth.currentUser?.let {
-                        dbRef.child(it.uid).child(viewModel.groups.value!![index].groupParent.groupName).setValue(viewModel.groups.value!![index].groupParent.contacts)
+                        dbRef.child(it.uid).child(viewModel.groups.value!![index].groupParent.groupName).
+                            setValue(viewModel.groups.value!![index].groupParent.contacts)
                     }
                 }
 
@@ -343,4 +374,9 @@ class GroupActivity : AppCompatActivity() {
             IntervalType.Monthly -> String.format("Monthly Notification is scheduled at %dth %s", interval.monthlyInterval.date, time)
         }
     }
+
+    data class Contact (var name : String,
+                        var reminderText : String,
+                        var phoneNumber : String,
+                        var groupSettingsIsChecked : Boolean = false) : Serializable
 }
