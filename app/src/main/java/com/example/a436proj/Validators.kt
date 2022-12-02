@@ -26,4 +26,13 @@ class Validators {
         val passwordRegex = Regex("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}\$")
         return passwordRegex.matches(password)
     }
+
+    fun isGoogleAccount(email: String?) : Boolean{
+        if(email.isNullOrEmpty()){
+            return false
+        }
+        val googleEmail = Regex("^^[\\w.+\\-]+@gmail\\.com\$")
+        return googleEmail.matches(email)
+    }
+
 }

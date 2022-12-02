@@ -3,6 +3,7 @@ package com.example.a436proj
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
@@ -44,6 +45,16 @@ class RegistrationActivity : AppCompatActivity() {
             return
         }
 
+        if(validator.isGoogleAccount(email)){  //google account. please use google sigin option
+            Toast.makeText(
+                this,
+                getString(R.string.invalid_google),
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+
         if (!validator.validPassword(password)) {  //invalid password
             Toast.makeText(
                 this,
@@ -73,11 +84,23 @@ class RegistrationActivity : AppCompatActivity() {
                     startActivity(Intent(this, LoginActivity::class.java)) //registration success sending to login page
                     finishAffinity()
                 } else { // registration failed
-                    Toast.makeText(
-                        this,
-                        getString(R.string.register_failed_string),
-                        Toast.LENGTH_LONG
-                    ).show()
+                    auth.fetchSignInMethodsForEmail(email).addOnCompleteListener(){task->
+                        val existingEmail = task.result
+                        Log.i("existing Email", "$existingEmail")
+                        if(existingEmail != null){
+                            Toast.makeText(
+                                this,
+                                getString(R.string.register_failed_existing),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }else{
+                            Toast.makeText(
+                                this,
+                                getString(R.string.register_failed_string),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
                 }
             }
 
