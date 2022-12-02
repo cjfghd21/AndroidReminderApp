@@ -189,11 +189,17 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
         }
     }
 
-    fun updateGroupModelList(newList : MutableList<ExpandableGroupModel>, shouldCollapse : Boolean = false, previousGroupIndex : Int = 0) {
+    fun updateGroupModelList(newList : MutableList<ExpandableGroupModel>, shouldCollapse : Boolean = false, previousGroupIndex : Int = 0, shouldExpand : Boolean = false, expandParentIndex : Int = 0) {
         groupModelList = newList
         if (shouldCollapse) {
             collapseRow(previousGroupIndex)
         }
+
+        if (shouldExpand) {
+            collapseRow(expandParentIndex)
+            expandRow(expandParentIndex)
+        }
+
         notifyDataSetChanged()
     }
 

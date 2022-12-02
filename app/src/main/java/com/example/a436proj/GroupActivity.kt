@@ -165,7 +165,12 @@ class GroupActivity : AppCompatActivity() {
                 var contacts = data?.extras?.get("resultContactsList") as? MutableList<SelectableGroups.Group.Contact>
                 if (contacts != null) {
                     viewModel.groups.value!![index].groupParent.contacts = contacts
-                    groupRV.updateGroupModelList(viewModel.groups.value!!)
+                    if (viewModel.groups.value!![index].isExpanded) {
+                        groupRV.updateGroupModelList(viewModel.groups.value!!, shouldExpand = true, expandParentIndex = index)
+                    }
+                    else {
+                        groupRV.updateGroupModelList(viewModel.groups.value!!)
+                    }
                     firebaseAuth.currentUser?.let {
                         dbRef.child(it.uid).child(viewModel.groups.value!![index].groupParent.groupName).
                             setValue(viewModel.groups.value!![index].groupParent.contacts)
