@@ -20,6 +20,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupBinding
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.Query
 import com.google.firebase.database.ValueEventListener
@@ -39,6 +42,7 @@ import kotlin.collections.HashMap
 class GroupActivity : AppCompatActivity() {
 
     var list = mutableListOf<ExpandableGroupModel>()
+    private lateinit var googleAuth: GoogleSignInClient
     private lateinit var groupRV : GroupRecyclerViewAdapter
     private lateinit var viewModel : GroupViewModel
     private lateinit var pref: SharedPreferences
@@ -51,6 +55,13 @@ class GroupActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+
+        val signInRequest = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("951802864601-aiqbs92cqaq3pljd2eei6apj1cpkmc6m.apps.googleusercontent.com")
+            .requestEmail()
+            .build()
+
+        googleAuth = GoogleSignIn.getClient(this,signInRequest)
         firebaseAuth = requireNotNull(FirebaseAuth.getInstance())
         binding = ActivityGroupBinding.inflate(layoutInflater)
 
@@ -81,7 +92,6 @@ class GroupActivity : AppCompatActivity() {
 
         }
 
-
         firebaseAuth.currentUser?.let {
               viewModel.groups.value = list
               dbRef.child(it.uid).get().addOnCompleteListener(){ task->
@@ -90,18 +100,6 @@ class GroupActivity : AppCompatActivity() {
                         val result = task.result.value as Map<String, MutableList<Map<String,Any>>>
                         Log.i("firebase value", "Got value ${result!!::class.java.typeName} in Group Activity")
                         Log.i("firebase result", "User is $result")
-
-                        /*
-                        dbRef.child(it.uid).child("abc").get().addOnCompleteListener(){task2->
-                            if(task.isSuccessful){
-                                val res = task2.result.value as ArrayList<Any>
-                                val one = res[0] as Map<String,Any>
-                                one.forEach{(key,value)->
-                                    Log.i("key val", "$key $value")
-                                }
-
-                            }
-                        }*/
                         result.forEach{(key,value) ->
                             var contact : MutableList<SelectableGroups.Group.Contact> = mutableListOf()
                             for (i in 0 until value.size){
@@ -121,18 +119,8 @@ class GroupActivity : AppCompatActivity() {
                                 SelectableGroups.Group(key,
                                     contact)))
                             groupRV.updateGroupModelList(viewModel.groups.value!!)
-
-
-
-                            /*Log.i("contacts value","contacts is  $contact , ${contact::class.java.typeName}")
-                            viewModel.groups.value!![index].groupParent.contacts = contact
-                            groupRV.updateGroupModelList(viewModel.groups.value!!)
-                            Log.i("contacts value in viewmodel","contacts is  ${viewModel.groups.value!![index].groupParent.contacts}, ${viewModel.groups.value!![index].groupParent.contacts::class.java.typeName}")
-                            index++*/
                         }
-
                     }
-
                 }else{
                     Log.e("firebase", "Error getting data")
                 }
@@ -265,7 +253,8 @@ class GroupActivity : AppCompatActivity() {
                     putString("password", "")
                     apply()
                 }
-                FirebaseAuth.getInstance().signOut(); //unauthorize current user out from firebase
+                FirebaseAuth.getInstance().signOut() //unauthorize current user out from firebase
+                googleAuth.signOut()
                 finishAffinity()
                 startActivity(Intent(this, AccessActivity::class.java))
             }
@@ -276,7 +265,6 @@ class GroupActivity : AppCompatActivity() {
 
             builder.show()
         }
-
 
         return true
     }
