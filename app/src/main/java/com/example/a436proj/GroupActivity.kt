@@ -50,6 +50,7 @@ class GroupActivity : AppCompatActivity() {
     private var groupNameToInterval: MutableMap<String, Interval> = mutableMapOf()
     private val database = Firebase.database
     private val dbRef = database.getReference("contacts")
+    private val reminderRef = database.getReference("Reminder")
     private lateinit var firebaseAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,29 +93,34 @@ class GroupActivity : AppCompatActivity() {
 
         }
 
+        //once logged in, gets user info from database then update ui accordingly.
         firebaseAuth.currentUser?.let {
               viewModel.groups.value = list
+              //retrieving group and contact info
               dbRef.child(it.uid).get().addOnCompleteListener(){ task->
                 if(task.isSuccessful){
                     if(task.result.value != null) {
-                        val result = task.result.value as Map<String, MutableList<Map<String,Any>>>
+                        val result = task.result.value as Map<String, Any>
                         Log.i("firebase value", "Got value ${result!!::class.java.typeName} in Group Activity")
                         Log.i("firebase result", "User is $result")
-                        result.forEach{(key,value) ->
+                        result.forEach{(key,v) ->
                             var contact : MutableList<SelectableGroups.Group.Contact> = mutableListOf()
-                            for (i in 0 until value.size){
-                                val new = SelectableGroups.Group.Contact("","","")
-                                value[i].forEach{(key,value)->
-                                    when(key){
-                                        "groupSettingsIsChecked" -> new.groupSettingsIsChecked = value as Boolean
-                                        "name" -> new.name = value as String
-                                        "phoneNumber"-> new.phoneNumber = value as String
-                                        "reminderText" -> new.reminderText = value as String
+                            if(v != "empty"){
+                                val value = v as MutableList<Map<String,Any>>
+                                for (i in 0 until value.size) {
+                                    val new = SelectableGroups.Group.Contact("", "", "")
+                                    value[i].forEach { (key, value) ->
+                                        when (key) {
+                                            "groupSettingsIsChecked" -> new.groupSettingsIsChecked =
+                                                value as Boolean
+                                            "name" -> new.name = value as String
+                                            "phoneNumber" -> new.phoneNumber = value as String
+                                            "reminderText" -> new.reminderText = value as String
+                                        }
                                     }
+                                    contact.add(new)
                                 }
-                                contact.add(new)
                             }
-                            Log.i("contacts value","contacts is ${contact[0]!!::class.java.typeName}")
                             viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
                                 SelectableGroups.Group(key,
                                     contact)))
@@ -122,11 +128,29 @@ class GroupActivity : AppCompatActivity() {
                         }
                     }
                 }else{
-                    Log.e("firebase", "Error getting data")
+                    Log.e("firebase", "Error getting data from contacts")
                 }
             }
-        }
+            //get reminder info and set reminder
+            /*
+            reminderRef.child(it.uid).get().addOnCompleteListener(){task->
+                if(task.isSuccessful){
+                    if(task.result.value != null) {
+                        val result = task.result.value as Map<String, Any>
+                        result.forEach{(key,value)->                        //each group names and its interval
+                            val intervals : Interval
+                            when(key){
+                                "intervalType" -> if(value == "Weekly"){intervals.intervalType = IntervalType.Weekly
+                            }
 
+                        }
+                    }
+                }
+                else{
+                    Log.e("firebase", "Error getting data from reminder")
+                }
+            }*/
+        }
 
         if (!viewModel.groupsInitialzed.value!!) {
             viewModel.groups.value = list
@@ -180,6 +204,12 @@ class GroupActivity : AppCompatActivity() {
 
                 var interval = data?.extras?.get("interval") as? Interval
                 if (interval != null) {
+
+
+                    //storing reminder to group
+                    firebaseAuth.currentUser?.let {
+                        reminderRef.child(it.uid).child(groupName).setValue(interval)
+                    }
                     groupNameToInterval[groupName] = interval
                     scheduleNotification(groupName, interval)
                 }
@@ -191,9 +221,13 @@ class GroupActivity : AppCompatActivity() {
                 //the GroupSettingsActivity. Then we update the RecyclerView
                 var index = data?.extras?.get("groupIndex") as Int
                 val name = viewModel.groups.value!![index].groupParent.groupName
+
+                //deleting from database
                 firebaseAuth.currentUser?.let {
-                    dbRef.child(it.uid).child(name).removeValue()
+                    dbRef.child(it.uid).child(name).removeValue()  //delete group contact
+                    reminderRef.child(it.uid).child(name).removeValue() //delete alarm info.
                 }
+
                 viewModel.groups.value!!.removeAt(index)
                 groupRV.updateGroupModelList(viewModel.groups.value!!, true, index)
 
@@ -235,6 +269,10 @@ class GroupActivity : AppCompatActivity() {
                     viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
                         SelectableGroups.Group(inputEditText.text.toString(),
                             mutableListOf<SelectableGroups.Group.Contact>())))
+
+                    firebaseAuth.currentUser?.let {
+                        dbRef.child(it.uid).child(inputEditText.text.toString()).setValue("empty")
+                    }
                     groupRV.updateGroupModelList(viewModel.groups.value!!)
 
                     //For Chris: Connect the back end here. Update firebase with the new value of viewModel.groups.value!!
@@ -384,8 +422,4 @@ class GroupActivity : AppCompatActivity() {
         }
     }
 
-    data class Contact (var name : String,
-                        var reminderText : String,
-                        var phoneNumber : String,
-                        var groupSettingsIsChecked : Boolean = false) : Serializable
 }
