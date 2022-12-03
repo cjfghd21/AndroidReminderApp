@@ -152,9 +152,9 @@ class GroupActivity : AppCompatActivity() {
                                             intervals.intervalType = IntervalType.Weekly
                                             reminderRef.child(it.uid).child(key).child("weeklyInterval")
                                                 .get().addOnCompleteListener() { week ->
-                                                val result = task.result.value as Map<String, Any>
+                                                val result = week.result.value as Map<String, Any>
                                                 val day = result["day"]
-                                                val weekInterval: Int = result["weekInterval"] as Int
+                                                val weekInterval : Long = result["weekInterval"] as Long
                                                 var dayOfWeek = DayOfWeek.MONDAY
                                                 when (day) {
                                                     "MONDAY" -> dayOfWeek = DayOfWeek.MONDAY
@@ -166,7 +166,7 @@ class GroupActivity : AppCompatActivity() {
                                                     "SUNDAY" -> dayOfWeek = DayOfWeek.SUNDAY
                                                 }
                                                 intervals.weeklyInterval =
-                                                    WeeklyInterval(dayOfWeek, weekInterval)
+                                                    WeeklyInterval(dayOfWeek, weekInterval.toInt())
                                             }
                                         }
                                     "lastUpdateTimeStamp" -> intervals.lastUpdateTimestamp =
@@ -187,6 +187,8 @@ class GroupActivity : AppCompatActivity() {
                 }
             }
         }
+        //End of updating ui with database data.
+
 
         if (!viewModel.groupsInitialzed.value!!) {
             viewModel.groups.value = list
