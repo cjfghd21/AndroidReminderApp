@@ -43,6 +43,9 @@ class GroupSettingsActivity : AppCompatActivity() {
                 intent.putExtra("interval", interval as Serializable)
                 intent.putExtra("groupIndex", groupIndex)
                 setResult(RESULT_OK, intent)
+            } else {
+                // cancel should set empty result
+                setResult(RESULT_CANCELED)
             }
             return
         }

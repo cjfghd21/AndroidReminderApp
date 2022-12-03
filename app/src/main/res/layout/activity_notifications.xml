@@ -62,6 +62,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="4dp"
+                    android:backgroundTint="#9C27B0"
                     android:text="S" />
 
                 <Button
@@ -70,6 +71,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="4dp"
+                    android:backgroundTint="@android:color/darker_gray"
                     android:text="M" />
 
                 <Button
@@ -78,6 +80,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="4dp"
+                    android:backgroundTint="@android:color/darker_gray"
                     android:text="T" />
 
                 <Button
@@ -86,6 +89,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="4dp"
+                    android:backgroundTint="@android:color/darker_gray"
                     android:text="W" />
 
                 <Button
@@ -94,6 +98,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="4dp"
+                    android:backgroundTint="@android:color/darker_gray"
                     android:text="T" />
 
                 <Button
@@ -102,6 +107,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="4dp"
+                    android:backgroundTint="@android:color/darker_gray"
                     android:text="F" />
 
                 <Button
@@ -110,6 +116,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="5dp"
+                    android:backgroundTint="@android:color/darker_gray"
                     android:text="S" />
 
             </LinearLayout>
