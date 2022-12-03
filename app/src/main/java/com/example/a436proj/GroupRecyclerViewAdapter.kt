@@ -70,7 +70,6 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
             ExpandableGroupModel.CHILD -> {
                 (holder as GroupChildViewHolder).name.text = row.groupChild.name
                 holder.phoneNumber.text = row.groupChild.phoneNumber
-                holder.reminderText.text = row.groupChild.reminderText
                 holder.arrow.setOnClickListener {
                     if (row.isExpanded) {
                         row.isExpanded = false
@@ -221,7 +220,6 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
 
         internal var name = binding.name
         internal var phoneNumber = binding.phoneNumber
-        internal var reminderText = binding.reminderText
 
     }
 
