@@ -2,6 +2,7 @@ package com.example.a436proj
 
 import android.app.NotificationManager
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.TimePicker
@@ -42,18 +43,47 @@ class NotificationsActivity : AppCompatActivity() {
             save(false, binding.timePicker)
         }
 
-        binding.radioButton1.setOnClickListener {
+        binding.btnDaily.setOnClickListener {
             viewModel.setDailyInterval()
         }
 
-        binding.radioButton2.setOnClickListener {
-            // default to Monday for now
-            viewModel.setWeeklyInterval(DayOfWeek.WEDNESDAY)
+        binding.btnWeekly.setOnClickListener {
+            // default to Wednesday for now
+            viewModel.setWeeklyInterval(DayOfWeek.WEDNESDAY, 1)
+
+            // implement show & hide day of week buttons
         }
 
-        binding.radioButton3.setOnClickListener {
-            viewModel.setMonthlyInterval(binding.calendarView.date)
+        // binding weekly buttons
+        binding.btnSun.setOnClickListener {
+            viewModel.setWeeklyInterval(DayOfWeek.SUNDAY, 1)
+            binding.btnSun.setBackgroundColor(Color.GRAY);
         }
+
+        binding.btnMon.setOnClickListener {
+            viewModel.setWeeklyInterval(DayOfWeek.MONDAY, 1)
+        }
+
+        binding.btnTue.setOnClickListener {
+            viewModel.setWeeklyInterval(DayOfWeek.TUESDAY, 1)
+        }
+
+        binding.btnWed.setOnClickListener {
+            viewModel.setWeeklyInterval(DayOfWeek.WEDNESDAY, 1)
+        }
+
+        binding.btnThu.setOnClickListener {
+            viewModel.setWeeklyInterval(DayOfWeek.THURSDAY, 1)
+        }
+
+        binding.btnFri.setOnClickListener {
+            viewModel.setWeeklyInterval(DayOfWeek.FRIDAY, 1)
+        }
+
+        binding.btnSat.setOnClickListener {
+            viewModel.setWeeklyInterval(DayOfWeek.SATURDAY, 1)
+        }
+
         Log.d("CREATION", "onCreateView is being called")
     }
 

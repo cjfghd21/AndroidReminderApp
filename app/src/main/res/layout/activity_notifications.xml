@@ -16,8 +16,8 @@
 
         <TimePicker
             android:id="@+id/timePicker"
-            android:layout_width="284dp"
-            android:layout_height="157dp"
+            android:layout_width="277dp"
+            android:layout_height="166dp"
             android:layout_gravity="center"
             android:layout_marginLeft="-30dp"
             android:layout_marginRight="-30dp"
@@ -27,38 +27,88 @@
             android:timePickerMode="spinner" />
 
         <RadioGroup
-            android:id="@+id/radioGroup1"
-            android:layout_width="418dp"
+            android:id="@+id/radioDaily"
+            android:layout_width="match_parent"
             android:layout_height="550dp"
             android:background="#024CAF50"
-            android:padding="25dp">
+            android:padding="15dp">
 
             <RadioButton
-                android:id="@+id/radioButton1"
+                android:id="@+id/btn_daily"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Daily"
-                android:textSize="24sp" />
+                android:textSize="22sp" />
 
             <RadioButton
-                android:id="@+id/radioButton2"
+                android:id="@+id/btn_weekly"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Weekly"
-                android:textSize="24sp" />
+                android:textSize="22sp" />
 
-            <RadioButton
-                android:id="@+id/radioButton3"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Monthly"
-                android:textSize="24sp" />
+                android:layout_height="48dp"
+                android:orientation="horizontal">
 
-            <CalendarView
-                android:id="@+id/calendarView"
-                android:layout_width="wrap_content"
-                android:layout_height="321dp" />
+                <Button
+                    android:id="@+id/btn_sun"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="4dp"
+                    android:text="S" />
 
+                <Button
+                    android:id="@+id/btn_mon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="4dp"
+                    android:text="M" />
+
+                <Button
+                    android:id="@+id/btn_tue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="4dp"
+                    android:text="T" />
+
+                <Button
+                    android:id="@+id/btn_wed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="4dp"
+                    android:text="W" />
+
+                <Button
+                    android:id="@+id/btn_thu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="4dp"
+                    android:text="T" />
+
+                <Button
+                    android:id="@+id/btn_fri"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="4dp"
+                    android:text="F" />
+
+                <Button
+                    android:id="@+id/btn_sat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="5dp"
+                    android:text="S" />
+
+            </LinearLayout>
         </RadioGroup>
     </LinearLayout>
 

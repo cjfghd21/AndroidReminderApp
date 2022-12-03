@@ -338,9 +338,6 @@ class GroupActivity : AppCompatActivity() {
                     }
                 }
             }
-            IntervalType.Monthly -> {
-                // implement
-            }
         }
 
         val date = current.dayOfMonth
@@ -364,7 +361,6 @@ class GroupActivity : AppCompatActivity() {
         return when(interval.intervalType){
             IntervalType.Daily -> String.format("Daily Notification is scheduled at %s", time)
             IntervalType.Weekly-> String.format("Weekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
-            IntervalType.Monthly -> String.format("Monthly Notification is scheduled at %dth %s", interval.monthlyInterval.date, time)
         }
     }
 
