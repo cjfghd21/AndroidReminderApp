@@ -3,8 +3,10 @@ package com.example.a436proj
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.lifecycle.MutableLiveData
 import com.example.a436proj.databinding.ActivityRegistrationBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ktx.database
@@ -43,6 +45,16 @@ class RegistrationActivity : AppCompatActivity() {
             return
         }
 
+        if(validator.isGoogleAccount(email)){  //google account. please use google sigin option
+            Toast.makeText(
+                this,
+                getString(R.string.invalid_google),
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+
         if (!validator.validPassword(password)) {  //invalid password
             Toast.makeText(
                 this,
@@ -63,17 +75,32 @@ class RegistrationActivity : AppCompatActivity() {
                         getString(R.string.register_success_string),
                         Toast.LENGTH_LONG
                     ).show()
-                    val dbRef = database.getReference("User")
+                    var dbRef = database.getReference("User")
                     val use = User(email,password)  //data format to pass
                     dbRef.child(auth.uid!!).setValue(use)
+                    dbRef = database.getReference("contacts")
+                    val data = Group(null)
+                    dbRef.child(auth.uid!!).setValue(data) // initialize contacts with data.
                     startActivity(Intent(this, LoginActivity::class.java)) //registration success sending to login page
                     finishAffinity()
                 } else { // registration failed
-                    Toast.makeText(
-                        this,
-                        getString(R.string.register_failed_string),
-                        Toast.LENGTH_LONG
-                    ).show()
+                    auth.fetchSignInMethodsForEmail(email).addOnCompleteListener(){task->
+                        val existingEmail = task.result
+                        Log.i("existing Email", "$existingEmail")
+                        if(existingEmail != null){
+                            Toast.makeText(
+                                this,
+                                getString(R.string.register_failed_existing),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }else{
+                            Toast.makeText(
+                                this,
+                                getString(R.string.register_failed_string),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
                 }
             }
 
@@ -82,5 +109,9 @@ class RegistrationActivity : AppCompatActivity() {
     data class User(
         var email: String? = null,
         var password: String? = null,
+    )
+
+    data class Group(
+        var group: MutableLiveData<MutableList<ExpandableGroupModel>>? = null
     )
 }

@@ -70,7 +70,6 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
             ExpandableGroupModel.CHILD -> {
                 (holder as GroupChildViewHolder).name.text = row.groupChild.name
                 holder.phoneNumber.text = row.groupChild.phoneNumber
-                holder.reminderText.text = row.groupChild.reminderText
                 holder.arrow.setOnClickListener {
                     if (row.isExpanded) {
                         row.isExpanded = false
@@ -134,6 +133,8 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
         var nextPosition = position
         when (row.type) {
             ExpandableGroupModel.PARENT -> {
+                Log.i("recycler contact","parent contact is ${row.groupParent.contacts!!::class.java.typeName}")
+                Log.i("recycler contact","parent contact name ${row.groupParent.groupName!!::class.java.typeName}")
                 for(child in row.groupParent.contacts){
                     Log.d("Testing", child.name)
                     groupModelList.add(++nextPosition, ExpandableGroupModel(ExpandableGroupModel.CHILD, child))
@@ -187,11 +188,17 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
         }
     }
 
-    fun updateGroupModelList(newList : MutableList<ExpandableGroupModel>, shouldCollapse : Boolean = false, previousGroupIndex : Int = 0) {
+    fun updateGroupModelList(newList : MutableList<ExpandableGroupModel>, shouldCollapse : Boolean = false, previousGroupIndex : Int = 0, shouldExpand : Boolean = false, expandParentIndex : Int = 0) {
         groupModelList = newList
         if (shouldCollapse) {
             collapseRow(previousGroupIndex)
         }
+
+        if (shouldExpand) {
+            collapseRow(expandParentIndex)
+            expandRow(expandParentIndex)
+        }
+
         notifyDataSetChanged()
     }
 
@@ -213,7 +220,6 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
 
         internal var name = binding.name
         internal var phoneNumber = binding.phoneNumber
-        internal var reminderText = binding.reminderText
 
     }
 

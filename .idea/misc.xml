@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/CAHN11/Desktop/436GroupProject/app/src/main/res/layout/group_settings_notification.xml" value="0.1" />
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/drawable-v24/arrow_back.xml" value="0.1" />
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/drawable-v24/delete.xml" value="0.1" />
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/drawable-v24/logout.xml" value="0.1" />
@@ -42,10 +43,15 @@
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/menu/add_menu.xml" value="0.1828125" />
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/menu/delete_menu.xml" value="0.18177083333333333" />
         <entry key="..\:/Users/marcu/Desktop/436GroupProject/app/src/main/res/menu/search_menu.xml" value="0.35833333333333334" />
-        <entry key="app/src/main/res/layout/activity_group.xml" value="0.2046875" />
-        <entry key="app/src/main/res/layout/activity_group_settings.xml" value="0.24947916666666667" />
+        <entry key="app/src/main/res/layout/activity_group.xml" value="0.2871376811594203" />
+        <entry key="app/src/main/res/layout/activity_group_settings.xml" value="0.165" />
+        <entry key="app/src/main/res/layout/activity_login.xml" value="0.1431159420289855" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.3591485507246377" />
+        <entry key="app/src/main/res/layout/activity_notifications.xml" value="0.196746826171875" />
         <entry key="app/src/main/res/layout/add_contact_contact.xml" value="0.1716485507246377" />
+        <entry key="app/src/main/res/layout/fragment_notifications.xml" value="0.15217391304347827" />
+        <entry key="app/src/main/res/layout/group_settings_contact.xml" value="0.15217391304347827" />
+        <entry key="app/src/main/res/menu/add_menu.xml" value="0.37604166666666666" />
       </map>
     </option>
   </component>

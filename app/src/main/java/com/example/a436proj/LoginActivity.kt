@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.content.Intent
 import android.content.SharedPreferences
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.example.a436proj.databinding.ActivityLoginBinding
@@ -97,7 +98,7 @@ class LoginActivity : AppCompatActivity() {
                ).show()
 
                //
-               val dbRef = database.getReference("User")
+               var dbRef = database.getReference("User")
                dbRef.child(firebaseAuth.uid!!).child("email").get() //getting email from database <- need to change to data once we know which data are going to be stored.
                //update viewModel values with data retrieved.
 
@@ -145,15 +146,25 @@ class LoginActivity : AppCompatActivity() {
                                             "Login Success",
                                             Toast.LENGTH_LONG
                                         ).show()
-                                        val dbRef = database.getReference("User")
+                                        var dbRef = database.getReference("User")
                                         val use = RegistrationActivity.User(firebaseAuth.uid, "password")
                                         dbRef.child(firebaseAuth.uid!!).setValue(use)
-
-
-
                                         val email = dbRef.child(firebaseAuth.uid!!).child("email").get().toString()
                                         val password = dbRef.child(firebaseAuth.uid!!).child("password").get().toString()
 
+                                        dbRef = database.getReference("contacts")
+                                        dbRef.child(firebaseAuth.uid!!).get().addOnCompleteListener{task->
+                                            if(task.isSuccessful){
+                                                val result  =task.result.value
+                                                Log.i("firebase", "Got value $result")
+                                                if (result == null){ // value not found initialze
+                                                    val data = RegistrationActivity.Group(null)
+                                                    dbRef.child(firebaseAuth.uid!!).setValue(data) // initialize contacts with data.
+                                                }
+                                            }else{
+                                                Log.e("firebase", "Error getting data")
+                                            }
+                                        }
 
                                         //write to shared pref current credential
                                         with(pref.edit()){
