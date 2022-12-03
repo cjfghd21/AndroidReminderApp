@@ -14,6 +14,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
+import android.widget.TimePicker
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -31,7 +32,9 @@ import com.google.firebase.ktx.Firebase
 import java.io.Serializable
 import java.sql.Array
 import java.sql.Time
+import java.time.DayOfWeek
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -132,24 +135,57 @@ class GroupActivity : AppCompatActivity() {
                 }
             }
             //get reminder info and set reminder
-            /*
             reminderRef.child(it.uid).get().addOnCompleteListener(){task->
                 if(task.isSuccessful){
                     if(task.result.value != null) {
-                        val result = task.result.value as Map<String, Any>
+                        val result = task.result.value as Map<String, Map<String,Any>>
                         result.forEach{(key,value)->                        //each group names and its interval
-                            val intervals : Interval
-                            when(key){
-                                "intervalType" -> if(value == "Weekly"){intervals.intervalType = IntervalType.Weekly
+                            var intervals: Interval = Interval(IntervalType.Daily, LocalTime.of(0, 0))
+                            value.forEach{(k,v)->
+                                when(k) {
+                                    "intervalType" ->
+                                        if (v == "Daily") {
+                                            intervals.intervalType = IntervalType.Daily
+                                            intervals.weeklyInterval =
+                                                WeeklyInterval(DayOfWeek.MONDAY, 1)
+                                        } else if (v == "Weekly") {
+                                            intervals.intervalType = IntervalType.Weekly
+                                            reminderRef.child(it.uid).child(key).child("weeklyInterval")
+                                                .get().addOnCompleteListener() { week ->
+                                                val result = task.result.value as Map<String, Any>
+                                                val day = result["day"]
+                                                val weekInterval: Int = result["weekInterval"] as Int
+                                                var dayOfWeek = DayOfWeek.MONDAY
+                                                when (day) {
+                                                    "MONDAY" -> dayOfWeek = DayOfWeek.MONDAY
+                                                    "TUESDAY" -> dayOfWeek = DayOfWeek.TUESDAY
+                                                    "WEDNESDAY" -> dayOfWeek = DayOfWeek.WEDNESDAY
+                                                    "THURSDAY" -> dayOfWeek = DayOfWeek.THURSDAY
+                                                    "FRIDAY" -> dayOfWeek = DayOfWeek.FRIDAY
+                                                    "SATURDAY" -> dayOfWeek = DayOfWeek.SATURDAY
+                                                    "SUNDAY" -> dayOfWeek = DayOfWeek.SUNDAY
+                                                }
+                                                intervals.weeklyInterval =
+                                                    WeeklyInterval(dayOfWeek, weekInterval)
+                                            }
+                                        }
+                                    "lastUpdateTimeStamp" -> intervals.lastUpdateTimestamp =
+                                        LocalDateTime.now()
+                                    "timeToSendNotification" -> intervals.timeToSendNotification =
+                                        LocalTime.of((v as Map<String,Int>)["hour"]!! ,v["minute"]!!, 0)
+                                }
                             }
-
+                            groupNameToInterval[key] = intervals
+                            scheduleNotification(key, intervals)
                         }
+
+
+                    }
+                    else{
+                        Log.e("firebase", "Error getting data from reminder")
                     }
                 }
-                else{
-                    Log.e("firebase", "Error getting data from reminder")
-                }
-            }*/
+            }
         }
 
         if (!viewModel.groupsInitialzed.value!!) {
@@ -212,6 +248,7 @@ class GroupActivity : AppCompatActivity() {
                     }
                     groupNameToInterval[groupName] = interval
                     scheduleNotification(groupName, interval)
+                    showAlert(interval) //moved here so when it recreates doesnt show same message.
                 }
             }
 
@@ -299,6 +336,8 @@ class GroupActivity : AppCompatActivity() {
                 }
                 FirebaseAuth.getInstance().signOut() //unauthorize current user out from firebase
                 googleAuth.signOut()
+                //to Yun: delete notification set here.
+
                 finishAffinity()
                 startActivity(Intent(this, AccessActivity::class.java))
             }
@@ -350,8 +389,6 @@ class GroupActivity : AppCompatActivity() {
             time,
             pendingIntent
         )
-
-        showAlert(interval)
     }
 
     private fun getTime(interval: Interval): Long {
