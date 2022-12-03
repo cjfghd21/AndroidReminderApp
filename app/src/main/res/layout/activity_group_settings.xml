@@ -6,24 +6,7 @@
     android:layout_height="match_parent"
     android:weightSum="1"
     tools:context=".GroupSettingsActivity">
-    <TextView
-        android:id="@+id/notifications_header"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Timer for Reminder"
-        android:textSize="25dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-    <ImageView
-        android:id="@+id/set_notification_btn"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginLeft="10dp"
-        android:src="@drawable/add"
-        android:layout_gravity="center_vertical"
-        tools:ignore="MissingConstraints" />
+
 
 <!--    <androidx.recyclerview.widget.RecyclerView-->
 <!--        android:id="@+id/notifications_recycler_view"-->
@@ -32,23 +15,12 @@
 <!--        android:scrollbars="vertical"-->
 <!--        app:layoutManager="LinearLayoutManager"-->
 <!--        app:layout_constraintTop_toBottomOf="@+id/notifications_header"/>-->
-    <TextView
-        android:id="@+id/our_timing"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="Set Timer"
-        android:textSize="25dp"
-        app:layout_goneMarginTop="10dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/notifications_header"
-        />
 
     <FrameLayout
         android:id="@+id/contacts_header_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/our_timing">
+        app:layout_constraintTop_toTopOf="parent">
         <LinearLayout
             android:layout_width="40dp"
             android:layout_height="match_parent"

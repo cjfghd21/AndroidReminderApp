@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/notification_settings_button"
+        android:title="Notifications"
+        android:icon="@drawable/notifications"
+        app:showAsAction="always"/>
+    <item
         android:id="@+id/delete_group_button"
         android:title="Delete Group"
         android:icon="@drawable/delete"

@@ -151,11 +151,6 @@ class GroupSettingsActivity : AppCompatActivity() {
 
             //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
         }
-
-        binding.setNotificationBtn.setOnClickListener {
-            var notificationIntent = Intent(this, NotificationsActivity::class.java)
-            startActivityForResult(notificationIntent, NotificationsActivity.requestCode)
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -182,6 +177,11 @@ class GroupSettingsActivity : AppCompatActivity() {
             }
 
             builder.show()
+        }
+
+        if (id == R.id.notification_settings_button) {
+            var notificationIntent = Intent(this, NotificationsActivity::class.java)
+            startActivityForResult(notificationIntent, NotificationsActivity.requestCode)
         }
 
         return true
