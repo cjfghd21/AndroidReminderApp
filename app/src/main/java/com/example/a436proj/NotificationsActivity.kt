@@ -129,7 +129,7 @@ class NotificationsActivity : AppCompatActivity() {
 
         when (day) {
             DayOfWeek.SUNDAY -> {
-                binding.btnSun.setBackgroundColor(Color.GREEN)
+                binding.btnSun.setBackgroundColor(purple)
             }
             DayOfWeek.MONDAY -> {
                 binding.btnMon.setBackgroundColor(purple)
