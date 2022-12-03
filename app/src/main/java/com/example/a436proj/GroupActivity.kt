@@ -47,7 +47,7 @@ class GroupActivity : AppCompatActivity() {
     private lateinit var viewModel : GroupViewModel
     private lateinit var pref: SharedPreferences
     private lateinit var binding: ActivityGroupBinding
-    private var groupIdToInterval: MutableMap<Int, Interval> = mutableMapOf()
+    private var groupNameToInterval: MutableMap<String, Interval> = mutableMapOf()
     private val database = Firebase.database
     private val dbRef = database.getReference("contacts")
     private lateinit var firebaseAuth: FirebaseAuth
@@ -162,6 +162,7 @@ class GroupActivity : AppCompatActivity() {
                 //We update the viewModel's groups list at the groupIndex that we get from the GroupSettingsActivity with the
                 //new value of the contacts that we got from the GroupSettingsActivity. Then we update the RecyclerView
                 var index = data?.extras?.get("groupIndex") as Int
+                var groupName = viewModel.groups.value!![index].groupParent.groupName
                 var contacts = data?.extras?.get("resultContactsList") as? MutableList<SelectableGroups.Group.Contact>
                 if (contacts != null) {
                     viewModel.groups.value!![index].groupParent.contacts = contacts
@@ -179,8 +180,8 @@ class GroupActivity : AppCompatActivity() {
 
                 var interval = data?.extras?.get("interval") as? Interval
                 if (interval != null) {
-                    groupIdToInterval[index] = interval
-                    scheduleNotification(index, interval)
+                    groupNameToInterval[groupName] = interval
+                    scheduleNotification(groupName, interval)
                 }
             }
 
@@ -288,9 +289,11 @@ class GroupActivity : AppCompatActivity() {
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun scheduleNotification(groupIndex: Int, interval: Interval) {
+    private fun scheduleNotification(groupName: String, interval: Interval) {
         val intent = Intent(applicationContext, Notification::class.java)
-        intent.putExtra(content, String.format("Send notification to group %d", groupIndex))
+        // set action with groupName so that intent's filterEquals is true for the same group.
+        intent.setAction(groupName)
+        intent.putExtra(content, String.format("Send notification to group %s", groupName))
         val pendingIntent = PendingIntent.getBroadcast(
             applicationContext,
             notificationID,
@@ -299,13 +302,17 @@ class GroupActivity : AppCompatActivity() {
         )
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val time = getTime(interval)
+        // cancel if previously tied intent exists
+        alarmManager.cancel(pendingIntent)
 
+        // set new alarm
+        val time = getTime(interval)
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             time,
             pendingIntent
         )
+
         showAlert(interval)
     }
 
@@ -313,10 +320,23 @@ class GroupActivity : AppCompatActivity() {
         val minute = interval.timeToSendNotification.minute
         val hour = interval.timeToSendNotification.hour
         val calendar = getCalendar(interval)
+        calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MINUTE, minute)
         calendar.set(Calendar.HOUR_OF_DAY, hour)
         return calendar.timeInMillis
     }
+
+//    private fun getInterval(interval: Interval): Long {
+//        when(interval.intervalType) {
+//            IntervalType.Daily -> {
+//                return AlarmManager.INTERVAL_DAY // 24 hours in milliseconds
+//            }
+//            IntervalType.Weekly -> {
+//                // one week * weekInterval in milliseconds
+//                return interval.weeklyInterval.weekInterval.toLong() * AlarmManager.INTERVAL_DAY * 7
+//            }
+//        }
+//    }
 
     private fun getCalendar(interval: Interval): Calendar {
         var current = LocalDateTime.now()
