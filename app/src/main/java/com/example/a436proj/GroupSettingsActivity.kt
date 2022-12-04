@@ -24,6 +24,7 @@ class GroupSettingsActivity : AppCompatActivity() {
     private lateinit var contactsRV : GroupSettingsContactRecyclerViewAdapter
     private var groupIndex : Int = -1
     private var groupName : String = ""
+    private var resultIntent : Intent? = Intent()
 
     private lateinit var firebaseService: FirebaseService
     private lateinit var notificationHandler: NotificationHandler
@@ -60,6 +61,11 @@ class GroupSettingsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         supportActionBar!!.title = "Group Settings"
+
+        if (savedInstanceState != null) {
+            resultIntent = savedInstanceState.getParcelable("resultIntent")
+            setResult(RESULT_OK, resultIntent)
+        }
 
         // setup firebase connection
         Intent(this, FirebaseService::class.java).also {intent ->
@@ -119,12 +125,18 @@ class GroupSettingsActivity : AppCompatActivity() {
             //result code RESULT_OK and the intent we created
             viewModel.deleteChecked()
             contactsRV.updateContactsList(viewModel.contactsList.value!!)
-            val intent = Intent()
-            intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
-            intent.putExtra("groupIndex", groupIndex)
-            setResult(RESULT_OK, intent)
+            resultIntent!!.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
+            resultIntent!!.putExtra("groupIndex", groupIndex)
+            setResult(RESULT_OK, resultIntent)
 
             //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (resultIntent != null) {
+            outState.putParcelable("resultIntent", resultIntent)
         }
     }
 
@@ -174,9 +186,9 @@ class GroupSettingsActivity : AppCompatActivity() {
                 Log.i("contacts value","viewModel is ${viewModel.contactsList.value!!::class.java.typeName}")
 
                 contactsRV.updateContactsList(viewModel.contactsList.value!!)
-                intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
-                intent.putExtra("groupIndex", groupIndex)
-                setResult(RESULT_OK, intent)
+                resultIntent!!.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
+                resultIntent!!.putExtra("groupIndex", groupIndex)
+                setResult(RESULT_OK, resultIntent)
 
                 //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
             }
