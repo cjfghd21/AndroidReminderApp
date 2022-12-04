@@ -1,9 +1,7 @@
 package com.example.a436proj
 
-import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.*
 import android.os.Bundle
 import android.os.IBinder
@@ -25,10 +23,8 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import java.io.Serializable
 import java.time.DayOfWeek
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 
 class GroupActivity : AppCompatActivity() {
@@ -327,11 +323,11 @@ class GroupActivity : AppCompatActivity() {
                     value.forEach{(k,v)->
                         when(k) {
                             "intervalType" ->
-                                if (v == "Daily") {
+                                if (v == IntervalType.Daily.printableName) {
                                     interval.intervalType = IntervalType.Daily
                                     interval.weeklyInterval =
                                         WeeklyInterval(DayOfWeek.MONDAY, 1)
-                                } else if (v == "Weekly") {
+                                } else if (v == IntervalType.Weekly.printableName) {
                                     interval.intervalType = IntervalType.Weekly
                                     reminderRef.child(it.uid).child(key).child("weeklyInterval")
                                         .get().addOnCompleteListener() { week ->
@@ -352,8 +348,6 @@ class GroupActivity : AppCompatActivity() {
                                                 WeeklyInterval(dayOfWeek, weekInterval.toInt())
                                         }
                                 }
-                            "lastUpdateTimeStamp" -> interval.lastUpdateTimestamp =
-                                LocalDateTime.now()
                             "timeToSendNotification" -> interval.timeToSendNotification =
                                 LocalTime.of((v as Map<String,Int>)["hour"]!! ,v["minute"]!!, 0)
                         }

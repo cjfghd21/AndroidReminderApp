@@ -28,7 +28,7 @@ class NotificationHandler : Service() {
 
     fun cancelAllNotifications() {
         groupNameToInterval.forEach {entry ->
-            val pendingIntent = createPendingIntent(entry.key)
+            val pendingIntent = createPendingIntent(entry.key, entry.value)
             getAlarmManager().cancel(pendingIntent)
         }
         // clear information just in case
@@ -36,8 +36,7 @@ class NotificationHandler : Service() {
     }
 
     fun scheduleNotification(groupName: String, interval: Interval) {
-        System.out.println("dang")
-        val pendingIntent = createPendingIntent(groupName)
+        val pendingIntent = createPendingIntent(groupName, interval)
 
         // cancel if previously tied intent exists
         getAlarmManager().cancel(pendingIntent)
@@ -55,11 +54,12 @@ class NotificationHandler : Service() {
         return getSystemService(Context.ALARM_SERVICE) as AlarmManager
     }
 
-    private fun createPendingIntent(groupName: String): PendingIntent {
+    private fun createPendingIntent(groupName: String, interval: Interval): PendingIntent {
         val intent = Intent(this.applicationContext, Notification::class.java)
         // set action with groupName so that intent's filterEquals is true for the same group.
         intent.action = groupName
-        intent.putExtra(content, String.format("Send notification to group %s", groupName))
+        intent.putExtra(intervalKey, interval)
+        intent.putExtra(groupNameKey, groupName)
         return PendingIntent.getBroadcast(
             applicationContext,
             notificationID,

@@ -1,6 +1,5 @@
 package com.example.a436proj
 
-import android.app.NotificationManager
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -8,16 +7,11 @@ import android.util.Log
 import android.view.View
 import android.widget.TimePicker
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
-import com.example.a436proj.databinding.ActivityGroupBinding
 import com.example.a436proj.databinding.ActivityNotificationsBinding
 import java.io.Serializable
-import java.sql.Time
 import java.time.DayOfWeek
-import java.time.LocalDateTime
 import java.time.LocalTime
-import kotlin.time.TimeSource
 
 class NotificationsActivity : AppCompatActivity() {
 
@@ -157,7 +151,6 @@ class NotificationsActivity : AppCompatActivity() {
             val intent = Intent()
             var interval: Interval = viewModel.getInterval()
             interval.timeToSendNotification = LocalTime.of(timePicker.hour, timePicker.minute, 0)
-            interval.lastUpdateTimestamp = LocalDateTime.now()
             intent.putExtra("interval", interval as Serializable)
             setResult(RESULT_OK, intent)
         }
