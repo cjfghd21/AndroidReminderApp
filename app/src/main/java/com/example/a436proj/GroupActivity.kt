@@ -205,7 +205,8 @@ class GroupActivity : AppCompatActivity() {
                 }
 
                 viewModel.groups.value!!.removeAt(index)
-                groupRV.updateGroupModelList(viewModel.groups.value!!, true, index)
+                val shouldCollapse = index != viewModel.groups.value!!.size
+                groupRV.updateGroupModelList(viewModel.groups.value!!, shouldCollapse, index)
 
                 //For Chris: Connect the back end here. Update firebase with the new value of viewModel.groups.value!!
             }
