@@ -1,5 +1,6 @@
 package com.example.a436proj
 
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LiveData
@@ -23,10 +24,16 @@ class GroupSettingsViewModel : ViewModel(), DefaultLifecycleObserver {
         get() = _contactsListInitialized
 
 
+    private val _resultIntent = MutableLiveData<Intent>()
+
+    internal val resultIntent : MutableLiveData<Intent>
+        get() = _resultIntent
+
     init {
         _allSelected.value = false
         _contactsList.value = mutableListOf()
         _contactsListInitialized.value = false
+        _resultIntent.value = Intent()
     }
 
     fun selectAll() {

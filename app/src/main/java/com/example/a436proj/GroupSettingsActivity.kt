@@ -24,7 +24,7 @@ class GroupSettingsActivity : AppCompatActivity() {
     private lateinit var contactsRV : GroupSettingsContactRecyclerViewAdapter
     private var groupIndex : Int = -1
     private var groupName : String = ""
-    private var resultIntent : Intent? = Intent()
+
 
     private lateinit var firebaseService: FirebaseService
     private lateinit var notificationHandler: NotificationHandler
@@ -62,10 +62,6 @@ class GroupSettingsActivity : AppCompatActivity() {
 
         supportActionBar!!.title = "Group Settings"
 
-        if (savedInstanceState != null) {
-            resultIntent = savedInstanceState.getParcelable("resultIntent")
-            setResult(RESULT_OK, resultIntent)
-        }
 
         // setup firebase connection
         Intent(this, FirebaseService::class.java).also {intent ->
@@ -125,18 +121,10 @@ class GroupSettingsActivity : AppCompatActivity() {
             //result code RESULT_OK and the intent we created
             viewModel.deleteChecked()
             contactsRV.updateContactsList(viewModel.contactsList.value!!)
-            resultIntent!!.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
-            resultIntent!!.putExtra("groupIndex", groupIndex)
-            setResult(RESULT_OK, resultIntent)
+            viewModel.resultIntent.value!!.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
+            viewModel.resultIntent.value!!.putExtra("groupIndex", groupIndex)
 
             //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
-        }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        if (resultIntent != null) {
-            outState.putParcelable("resultIntent", resultIntent)
         }
     }
 
@@ -186,9 +174,8 @@ class GroupSettingsActivity : AppCompatActivity() {
                 Log.i("contacts value","viewModel is ${viewModel.contactsList.value!!::class.java.typeName}")
 
                 contactsRV.updateContactsList(viewModel.contactsList.value!!)
-                resultIntent!!.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
-                resultIntent!!.putExtra("groupIndex", groupIndex)
-                setResult(RESULT_OK, resultIntent)
+                viewModel.resultIntent.value!!.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
+                viewModel.resultIntent.value!!.putExtra("groupIndex", groupIndex)
 
                 //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
             }
@@ -223,5 +210,10 @@ class GroupSettingsActivity : AppCompatActivity() {
                 else -> throw Exception("Invalid weekly interval value provided!")
             }
         }
+    }
+
+    override fun onBackPressed() {
+        setResult(RESULT_OK, viewModel.resultIntent.value!!)
+        super.onBackPressed()
     }
 }
