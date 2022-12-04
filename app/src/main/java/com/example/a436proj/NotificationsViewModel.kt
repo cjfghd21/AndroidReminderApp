@@ -1,10 +1,6 @@
 package com.example.a436proj
 
-import android.os.Bundle
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import java.sql.Time
 import java.time.DayOfWeek
 import java.time.LocalTime
 

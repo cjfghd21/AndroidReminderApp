@@ -16,10 +16,10 @@ import java.time.LocalTime
 class NotificationsActivity : AppCompatActivity() {
 
     companion object {
-        val requestCode : Int = 202
+        const val requestCode : Int = 202
     }
 
-    private final var purple : Int = Color.rgb(156, 39, 176)
+    private var purple : Int = Color.rgb(156, 39, 176)
     private lateinit var viewModel : NotificationsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +40,6 @@ class NotificationsActivity : AppCompatActivity() {
             save(false, binding.timePicker)
         }
 
-        binding.btnDaily.isChecked = true
         binding.btnDaily.setOnClickListener {
             if (binding.btnDaily.isChecked) {
                 displayWeeklyButtons(binding, View.GONE)
@@ -48,8 +47,6 @@ class NotificationsActivity : AppCompatActivity() {
             viewModel.setDailyInterval()
         }
 
-        // weekly buttons are hidden by default
-        displayWeeklyButtons(binding, View.GONE)
         binding.btnWeekly.setOnClickListener {
             if (binding.btnWeekly.isChecked) {
                 displayWeeklyButtons(binding, View.VISIBLE)
@@ -93,6 +90,15 @@ class NotificationsActivity : AppCompatActivity() {
             viewModel.setWeeklyInterval(DayOfWeek.SATURDAY, 1)
         }
 
+        val interval : Interval = viewModel.getInterval()
+        if (interval.intervalType == IntervalType.Daily) {
+            binding.btnDaily.isChecked = true
+            displayWeeklyButtons(binding, View.GONE)
+        } else if (interval.intervalType == IntervalType.Weekly) {
+            binding.btnWeekly.isChecked = true
+            displayWeeklyButtons(binding, View.VISIBLE)
+            setButtonBackgroundForDay(binding, interval.weeklyInterval.day)
+        }
         Log.d("CREATION", "onCreateView is being called")
     }
 
