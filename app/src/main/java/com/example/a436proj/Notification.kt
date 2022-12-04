@@ -6,9 +6,9 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.example.a436proj.NotificationHandler.LocalBinder
+import java.util.*
 
 const val channelID = "channel1"
-const val notificationID = 1
 const val intervalKey = "interval"
 const val groupNameKey = "groupName"
 
@@ -22,7 +22,8 @@ class Notification : BroadcastReceiver() {
             .build()
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(notificationID, notification)
+        // set unique Id to display all notifications
+        manager.notify(Calendar.getInstance().timeInMillis.toInt(), notification)
 
         // find service and reschedule notification
         val serviceIntent = Intent(context, NotificationHandler::class.java)

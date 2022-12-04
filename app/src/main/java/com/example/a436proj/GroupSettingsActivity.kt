@@ -134,14 +134,14 @@ class GroupSettingsActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        var id : Int = item.itemId
+        val id : Int = item.itemId
 
         if (id == R.id.delete_group_button) {
-            var builder = AlertDialog.Builder(this)
+            val builder = AlertDialog.Builder(this)
             builder.setTitle("Delete Group: ${intent.extras?.get("groupName")}?")
 
             builder.setPositiveButton("Delete") { dialog, which ->
-                var deleteIntent = Intent()
+                val deleteIntent = Intent()
                 deleteIntent.putExtra("groupIndex", groupIndex)
                 setResult(1, deleteIntent)
                 finish()
@@ -155,7 +155,7 @@ class GroupSettingsActivity : AppCompatActivity() {
         }
 
         if (id == R.id.notification_settings_button) {
-            var notificationIntent = Intent(this, NotificationsActivity::class.java)
+            val notificationIntent = Intent(this, NotificationsActivity::class.java)
             startActivityForResult(notificationIntent, NotificationsActivity.requestCode)
         }
 
@@ -167,12 +167,11 @@ class GroupSettingsActivity : AppCompatActivity() {
 
         if (requestCode == 0) {
             if (resultCode == 1) {
-                //For Chris: resultList is the contacts that are being added to the group
-                var resultList = data?.extras?.get("newContactsList") as MutableList<Contact>
+                val resultList = data?.extras?.get("newContactsList") as MutableList<Contact>
                 for (i in 0 until resultList.size) {
                     viewModel.contactsList.value!!.add(resultList[i])
                 }
-                Log.i("contacts value","viewModel is ${viewModel.contactsList.value!!!!::class.java.typeName}")
+                Log.i("contacts value","viewModel is ${viewModel.contactsList.value!!::class.java.typeName}")
 
                 contactsRV.updateContactsList(viewModel.contactsList.value!!)
                 intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
