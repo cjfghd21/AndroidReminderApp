@@ -382,7 +382,13 @@ class GroupActivity : AppCompatActivity() {
         val time = interval.timeToSendNotification.format(DateTimeFormatter.ISO_TIME)
         return when(interval.intervalType){
             IntervalType.Daily -> String.format("Daily Notification is scheduled at %s", time)
-            IntervalType.Weekly-> String.format("Weekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+            IntervalType.Weekly-> when(interval.weeklyInterval.weekInterval){
+                1 -> String.format("Weekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                2 -> String.format("Biweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                3 -> String.format("Triweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                4 -> String.format("Quatriweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                else -> throw Exception("Invalid weekly interval value provided!")
+            }
         }
     }
 }

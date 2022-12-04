@@ -93,8 +93,9 @@ class NotificationHandler : Service() {
                 } else if (current.dayOfWeek < interval.weeklyInterval.day) {
                     current = current.plusDays((interval.weeklyInterval.day.value - current.dayOfWeek.value).toLong())
                 } else {
+                    // current & interval are the same day
                     if (current.toLocalTime().isAfter(interval.timeToSendNotification)) {
-                        current = current.plusDays(7)
+                        current = current.plusDays((7 * interval.weeklyInterval.weekInterval).toLong())
                     }
                 }
             }
@@ -104,6 +105,7 @@ class NotificationHandler : Service() {
         val month = current.monthValue
         val year = current.year
         val calendar = Calendar.getInstance()
+        // month for some reason start from 1 not 0
         calendar.set(year, month - 1, date)
         return calendar
     }

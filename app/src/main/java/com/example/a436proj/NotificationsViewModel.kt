@@ -17,6 +17,14 @@ class NotificationsViewModel : ViewModel() {
         interval.weeklyInterval = WeeklyInterval(day, weekInterval)
     }
 
+    fun setWeeklyIntervalDay(day: DayOfWeek) {
+        interval.weeklyInterval.day = day
+    }
+
+    fun setWeeklyIntervalValue(intervalValue: Int) {
+        interval.weeklyInterval.weekInterval = intervalValue
+    }
+
     fun getInterval(): Interval  {
         return interval
     }

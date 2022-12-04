@@ -5,6 +5,9 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.TimePicker
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -57,37 +60,55 @@ class NotificationsActivity : AppCompatActivity() {
         // binding weekly buttons
         binding.btnSun.setOnClickListener {
             setButtonBackgroundForDay(binding, DayOfWeek.SUNDAY)
-            viewModel.setWeeklyInterval(DayOfWeek.SUNDAY, 1)
+            viewModel.setWeeklyIntervalDay(DayOfWeek.SUNDAY)
         }
 
         binding.btnMon.setOnClickListener {
             setButtonBackgroundForDay(binding, DayOfWeek.MONDAY)
-            viewModel.setWeeklyInterval(DayOfWeek.MONDAY, 1)
+            viewModel.setWeeklyIntervalDay(DayOfWeek.MONDAY)
         }
 
         binding.btnTue.setOnClickListener {
             setButtonBackgroundForDay(binding, DayOfWeek.TUESDAY)
-            viewModel.setWeeklyInterval(DayOfWeek.TUESDAY, 1)
+            viewModel.setWeeklyIntervalDay(DayOfWeek.TUESDAY)
         }
 
         binding.btnWed.setOnClickListener {
             setButtonBackgroundForDay(binding, DayOfWeek.WEDNESDAY)
-            viewModel.setWeeklyInterval(DayOfWeek.WEDNESDAY, 1)
+            viewModel.setWeeklyIntervalDay(DayOfWeek.WEDNESDAY)
         }
 
         binding.btnThu.setOnClickListener {
             setButtonBackgroundForDay(binding, DayOfWeek.THURSDAY)
-            viewModel.setWeeklyInterval(DayOfWeek.THURSDAY, 1)
+            viewModel.setWeeklyIntervalDay(DayOfWeek.THURSDAY)
         }
 
         binding.btnFri.setOnClickListener {
             setButtonBackgroundForDay(binding, DayOfWeek.FRIDAY)
-            viewModel.setWeeklyInterval(DayOfWeek.FRIDAY, 1)
+            viewModel.setWeeklyIntervalDay(DayOfWeek.FRIDAY)
         }
 
         binding.btnSat.setOnClickListener {
             setButtonBackgroundForDay(binding, DayOfWeek.SATURDAY)
-            viewModel.setWeeklyInterval(DayOfWeek.SATURDAY, 1)
+            viewModel.setWeeklyIntervalDay(DayOfWeek.SATURDAY)
+        }
+
+        // set up spinner for weekly custom
+        val spinner: Spinner = findViewById(R.id.weekly_spinner)
+        ArrayAdapter.createFromResource(
+            this,
+            R.array.weekly_spinner,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinner.adapter = adapter
+        }
+
+        binding.weeklySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                viewModel.setWeeklyIntervalValue(position + 1)
+            }
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
         }
 
         val interval : Interval = viewModel.getInterval()
@@ -98,6 +119,7 @@ class NotificationsActivity : AppCompatActivity() {
             binding.btnWeekly.isChecked = true
             displayWeeklyButtons(binding, View.VISIBLE)
             setButtonBackgroundForDay(binding, interval.weeklyInterval.day)
+            spinner.setSelection(interval.weeklyInterval.weekInterval - 1)
         }
         Log.d("CREATION", "onCreateView is being called")
     }
@@ -113,6 +135,7 @@ class NotificationsActivity : AppCompatActivity() {
         binding.btnThu.visibility = view
         binding.btnFri.visibility = view
         binding.btnSat.visibility = view
+        binding.weeklySpinner.visibility = view
     }
 
     private fun setButtonBackgroundForDay(
