@@ -1,58 +1,56 @@
 package com.example.a436proj
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.example.a436proj.SelectableGroups.Group.Contact
 import com.example.a436proj.databinding.ActivityGroupSettingsBinding
 import java.io.Serializable
+import java.time.format.DateTimeFormatter
 
 class GroupSettingsActivity : AppCompatActivity() {
 
     private lateinit var viewModel : GroupSettingsViewModel
-    lateinit var contactsLists : MutableList<SelectableGroups.Group.Contact>
+    lateinit var contactsLists : MutableList<Contact>
     private lateinit var contactsRV : GroupSettingsContactRecyclerViewAdapter
     private var groupIndex : Int = -1
+    private var groupName : String = ""
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    private lateinit var firebaseService: FirebaseService
+    private lateinit var notificationHandler: NotificationHandler
 
-        if (requestCode == 0) {
-            if (resultCode == 1) {
-                //For Chris: resultList is the contacts that are being added to the group
-                var resultList = data?.extras?.get("newContactsList") as MutableList<SelectableGroups.Group.Contact>
-                for (i in 0 until resultList.size) {
-                    viewModel.contactsList.value!!.add(resultList[i])
-                }
-                Log.i("contacts value","viewModel is ${viewModel.contactsList.value!!!!::class.java.typeName}")
+    private val notificationConnection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as NotificationHandler.LocalBinder
+            notificationHandler = binder.getService()
+        }
+        override fun onServiceDisconnected(arg0: ComponentName) {}
+    }
 
-                contactsRV.updateContactsList(viewModel.contactsList.value!!)
-                intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
-                intent.putExtra("groupIndex", groupIndex)
-                setResult(RESULT_OK, intent)
-
-                //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
-            }
-        } else if (requestCode == NotificationsActivity.requestCode) {
-            if (resultCode == RESULT_OK) {
-                var interval = data?.extras?.get("interval") as Interval
-                intent.putExtra("interval", interval as Serializable)
-                intent.putExtra("groupIndex", groupIndex)
-                setResult(RESULT_OK, intent)
-            } else {
-                // cancel should set empty result
-                setResult(RESULT_CANCELED)
-            }
-            return
+    private val firebaseConnection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as FirebaseService.LocalBinder
+            firebaseService = binder.getService()
+            // bind notification handler after connecting firebase
+            bindNotificationHandler()
         }
 
-       /* data?.getSerializableExtra("OurData").also { contactsLists = it as MutableList<SelectableGroups.Group.Contact> }
-        Log.d("Our Activity Result", " getting here!!!!!!!!!!!!")
-        Log.d("Our Activity Result", contactsLists.toString())*/
+        override fun onServiceDisconnected(arg0: ComponentName) {}
+    }
+
+    private fun bindNotificationHandler() {
+        Intent(this, NotificationHandler::class.java).also {intent ->
+            bindService(intent, notificationConnection, Context.BIND_AUTO_CREATE)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,45 +61,19 @@ class GroupSettingsActivity : AppCompatActivity() {
 
         supportActionBar!!.title = "Group Settings"
 
-        val contactsList : MutableList<SelectableGroups.Group.Contact> = intent.extras?.get("contactsList") as MutableList<SelectableGroups.Group.Contact>
-        groupIndex = intent.extras?.get("groupIndex") as Int
+        // setup firebase connection
+        Intent(this, FirebaseService::class.java).also {intent ->
+            bindService(intent, firebaseConnection, Context.BIND_AUTO_CREATE)
+        }
 
-        //val notificationsList = intent.extras
-
-        /*val contactsList = mutableListOf(
-            SelectableGroups.Group.Contact("Marcus Brooks", "0 days", "1 year", "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight."),
-            SelectableGroups.Group.Contact("Anthony Kim", "12 months", "30 seconds", "TEST REMINDER TEXT"),
-            SelectableGroups.Group.Contact("Yun Chang", "3 weeks", "14 hours", "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight."),
-            SelectableGroups.Group.Contact("Cheolhong Ahn", "31 days", "10 minutes", "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight."),
-            SelectableGroups.Group.Contact("Marcus Brooks", "0 days", "1 year", "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight."),
-            SelectableGroups.Group.Contact("Anthony Kim", "12 months", "30 seconds", "TEST REMINDER TEXT"),
-            SelectableGroups.Group.Contact("Yun Chang", "3 weeks", "14 hours", "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight."),
-            SelectableGroups.Group.Contact("Cheolhong Ahn", "31 days", "10 minutes", "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight."),
-            SelectableGroups.Group.Contact("Marcus Brooks", "0 days", "1 year", "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight."),
-            SelectableGroups.Group.Contact("Anthony Kim", "12 months", "30 seconds", "TEST REMINDER TEXT"),
-            SelectableGroups.Group.Contact("Yun Chang", "3 weeks", "14 hours", "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight."),
-            SelectableGroups.Group.Contact("Cheolhong Ahn", "31 days", "10 minutes", "Tell Mom Happy Birthday.\nHomework is due on Thursday\nSet an alarm for tonight.")
-        )*/
-
-        val notificationsList = mutableListOf(
-            "Tell mom happy birthday.",
-            "Buy a cake.",
-            "Attend the group meeting at 8pm.",
-            "JKHSADSAKJHSD AH SDKJA HDSKJAHKDJHAJKDH SAKHDKJ AKSDHKJA HDSKJAHD KSJAHDKJSAHKJDASH SDKHJSA DKJSAHD KJSAHDSKJA HDKSAJH DSKAJHD SKJAH DKSAJ HDSKAJHDSKJA HDSKJAHDSKJSA HDKSAJH DKSJA",
-            "Tell mom happy birthday.",
-            "Buy a cake.",
-            "Attend the group meeting at 8pm.",
-            "JKHSADSAKJHSD AH SDKJA HDSKJAHKDJHAJKDH SAKHDKJ AKSDHKJA HDSKJAHD KSJAHDKJSAHKJDASH SDKHJSA DKJSAHD KJSAHDSKJA HDKSAJH DSKAJHD SKJAH DKSAJ HDSKAJHDSKJA HDSKJAHDSKJSA HDKSAJH DKSJA",
-            "Tell mom happy birthday.",
-            "Buy a cake.",
-            "Attend the group meeting at 8pm.",
-            "JKHSADSAKJHSD AH SDKJA HDSKJAHKDJHAJKDH SAKHDKJ AKSDHKJA HDSKJAHD KSJAHDKJSAHKJDASH SDKHJSA DKJSAHD KJSAHDSKJA HDKSAJH DSKAJHD SKJAH DKSAJ HDSKAJHDSKJA HDSKJAHDSKJSA HDKSAJH DKSJA"
-        )
+        val contactsList : MutableList<Contact> = intent.extras?.get("contactsList") as MutableList<Contact>
+        groupIndex = intent.getIntExtra("groupIndex", 0)
+        groupName = intent.getStringExtra("groupName")!!
 
         viewModel = ViewModelProvider(this)[GroupSettingsViewModel::class.java]
 
         if (!viewModel.contactsListInitialzed.value!!) {
-            Log.d("sajhdjskadsa", "ViewModel Initialized")
+            Log.d("view model", "ViewModel Initialized")
             viewModel.contactsList.value = contactsList
             viewModel.contactsListInitialzed.value = true
         }
@@ -188,5 +160,57 @@ class GroupSettingsActivity : AppCompatActivity() {
         }
 
         return true
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 0) {
+            if (resultCode == 1) {
+                //For Chris: resultList is the contacts that are being added to the group
+                var resultList = data?.extras?.get("newContactsList") as MutableList<Contact>
+                for (i in 0 until resultList.size) {
+                    viewModel.contactsList.value!!.add(resultList[i])
+                }
+                Log.i("contacts value","viewModel is ${viewModel.contactsList.value!!!!::class.java.typeName}")
+
+                contactsRV.updateContactsList(viewModel.contactsList.value!!)
+                intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
+                intent.putExtra("groupIndex", groupIndex)
+                setResult(RESULT_OK, intent)
+
+                //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
+            }
+        } else if (requestCode == NotificationsActivity.requestCode) {
+            if (resultCode == RESULT_OK) {
+                var interval = data!!.getSerializableExtra("interval") as Interval
+                firebaseService.setInterval(groupName, interval)
+                notificationHandler.scheduleNotification(groupName, interval)
+                showAlert(interval)
+            }
+            return
+        }
+    }
+
+    private fun showAlert(interval: Interval) {
+        AlertDialog.Builder(this)
+            .setTitle("Notification Scheduled")
+            .setMessage(getAlertMessage(interval))
+            .setPositiveButton("Okay"){_,_ ->}
+            .show()
+    }
+
+    private fun getAlertMessage(interval: Interval): String {
+        val time = interval.timeToSendNotification.format(DateTimeFormatter.ISO_TIME)
+        return when(interval.intervalType){
+            IntervalType.Daily -> String.format("Daily Notification is scheduled at %s", time)
+            IntervalType.Weekly-> when(interval.weeklyInterval.weekInterval){
+                1 -> String.format("Weekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                2 -> String.format("Biweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                3 -> String.format("Triweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                4 -> String.format("Quatriweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                else -> throw Exception("Invalid weekly interval value provided!")
+            }
+        }
     }
 }

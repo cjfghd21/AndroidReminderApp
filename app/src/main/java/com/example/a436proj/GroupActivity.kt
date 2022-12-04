@@ -14,13 +14,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.example.a436proj.SelectableGroups.Group.Contact
 import com.example.a436proj.databinding.ActivityGroupBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import java.io.Serializable
-import java.time.format.DateTimeFormatter
 
 
 class GroupActivity : AppCompatActivity() {
@@ -98,7 +98,8 @@ class GroupActivity : AppCompatActivity() {
         Intent(this, FirebaseService::class.java).also {intent ->
             bindService(intent, firebaseConnection, Context.BIND_AUTO_CREATE)
         }
-        // setup notification channel and start handler
+
+        // setup notification channel
         creationNotificationChannel()
 
         if (!viewModel.groupsInitialized.value!!) {
@@ -123,28 +124,18 @@ class GroupActivity : AppCompatActivity() {
                 //We update the viewModel's groups list at the groupIndex that we get from the GroupSettingsActivity with the
                 //new value of the contacts that we got from the GroupSettingsActivity. Then we update the RecyclerView
                 var index = data?.extras?.get("groupIndex") as Int
-                var groupName = viewModel.groups.value!![index].groupParent.groupName
-                var contacts = data?.extras?.get("resultContactsList") as? MutableList<SelectableGroups.Group.Contact>
+                var group = viewModel.groups.value!![index]
+                var contacts = data?.extras?.get("resultContactsList") as? MutableList<Contact>
                 if (contacts != null) {
-                    viewModel.groups.value!![index].groupParent.contacts = contacts
-                    if (viewModel.groups.value!![index].isExpanded) {
+                    group.groupParent.contacts = contacts
+                    if (group.isExpanded) {
                         groupRV.updateGroupModelList(viewModel.groups.value!!, shouldExpand = true, expandParentIndex = index)
-                    }
-                    else {
+                    } else {
                         groupRV.updateGroupModelList(viewModel.groups.value!!)
                     }
                     firebaseService.setContacts(
-                        viewModel.groups.value!![index].groupParent.groupName,
-                        viewModel.groups.value!![index].groupParent.contacts)
-                }
-
-                var interval = data?.extras?.get("interval") as? Interval
-                if (interval != null) {
-                    //storing reminder to group
-                    firebaseService.setInterval(groupName, interval)
-                    notificationHandler.setIntervalForGroup(groupName, interval)
-                    notificationHandler.scheduleNotification(groupName, interval)
-                    showAlert(interval) // moved here so when it re-creates, it doesn't show the same message.
+                        group.groupParent.groupName,
+                        group.groupParent.contacts)
                 }
             }
 
@@ -263,20 +254,25 @@ class GroupActivity : AppCompatActivity() {
 
     private fun populateGroups() {
         viewModel.groups.value = list
-        val groupNameToContact = firebaseService.getGroupNameToContact()
-        groupNameToContact.forEach{(groupName, contacts) ->
-            viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
-                SelectableGroups.Group(groupName, contacts)))
-            groupRV.updateGroupModelList(viewModel.groups.value!!)
+        val callback = { groupNameToContacts: Map<String, List<Contact>> ->
+            groupNameToContacts.forEach{(groupName, contacts) ->
+                viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
+                    SelectableGroups.Group(groupName, contacts)))
+                groupRV.updateGroupModelList(viewModel.groups.value!!)
+            }
         }
+        firebaseService.getGroupNameToContacts(callback)
     }
 
     private fun populateGroupIntervals() {
-        val groupNameToInterval = firebaseService.getGroupNameToInterval()
-        groupNameToInterval.forEach{(groupName, interval) ->
-            notificationHandler.setIntervalForGroup(groupName, interval)
-            notificationHandler.scheduleNotification(groupName, interval)
+        val callback = { groupNameToInterval: Map<String, Interval> ->
+            groupNameToInterval.forEach{(groupName, interval) ->
+                notificationHandler.setIntervalForGroup(groupName, interval)
+                notificationHandler.scheduleNotification(groupName, interval)
+            }
         }
+        firebaseService.getGroupNameToInterval(callback)
+
     }
 
     private fun creationNotificationChannel() {
@@ -293,28 +289,6 @@ class GroupActivity : AppCompatActivity() {
     private fun bindNotificationHandler() {
         Intent(this, NotificationHandler::class.java).also {intent ->
             bindService(intent, notificationConnection, Context.BIND_AUTO_CREATE)
-        }
-    }
-
-    private fun showAlert(interval: Interval) {
-        AlertDialog.Builder(this)
-            .setTitle("Notification Scheduled")
-            .setMessage(getAlertMessage(interval))
-            .setPositiveButton("Okay"){_,_ ->}
-            .show()
-    }
-
-    private fun getAlertMessage(interval: Interval): String {
-        val time = interval.timeToSendNotification.format(DateTimeFormatter.ISO_TIME)
-        return when(interval.intervalType){
-            IntervalType.Daily -> String.format("Daily Notification is scheduled at %s", time)
-            IntervalType.Weekly-> when(interval.weeklyInterval.weekInterval){
-                1 -> String.format("Weekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
-                2 -> String.format("Biweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
-                3 -> String.format("Triweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
-                4 -> String.format("Quatriweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
-                else -> throw Exception("Invalid weekly interval value provided!")
-            }
         }
     }
 }

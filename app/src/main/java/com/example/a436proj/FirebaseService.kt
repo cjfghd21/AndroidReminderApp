@@ -52,19 +52,18 @@ class FirebaseService: Service() {
         }
     }
 
-    fun getGroupNameToContact(): Map<String, List<Contact>> {
-        var groupNameToInterval = mutableMapOf<String, List<Contact>>()
+    fun getGroupNameToContacts(callback: (groupNameToContacts: Map<String, List<Contact>>) -> Unit) {
         firebaseAuth.currentUser?.let {
-            //retrieving group and contact info
+            // retrieving group and contact info
             dbRef.child(it.uid).get().addOnCompleteListener(){ task->
                 if (!task.isSuccessful || task.result.value == null) {
                     Log.e("firebase", "Error getting data from reminder")
                     return@addOnCompleteListener
                 }
-
                 val result = task.result.value as Map<String, Any>
                 Log.i("firebase value", "Got value ${result!!::class.java.typeName} in Group Activity")
                 Log.i("firebase result", "User is $result")
+                var groupNameToContacts = mutableMapOf<String, List<Contact>>()
                 result.forEach{(key,v) ->
                     var contacts : MutableList<Contact> = mutableListOf()
                     if(v != "empty"){
@@ -83,15 +82,15 @@ class FirebaseService: Service() {
                             contacts.add(new)
                         }
                     }
-                    groupNameToInterval[key] = contacts
+                    groupNameToContacts[key] = contacts
                 }
+                callback(groupNameToContacts)
             }
         }
-        return groupNameToInterval
+        return
     }
 
-    fun getGroupNameToInterval(): Map<String, Interval> {
-        var groupNameToInterval = mutableMapOf<String, Interval>()
+    fun getGroupNameToInterval(callback: (groupNameToInterval: Map<String, Interval>) -> Unit) {
         firebaseAuth.currentUser?.let {
             //get reminder info and set reminder
             reminderRef.child(it.uid).get().addOnCompleteListener(){task->
@@ -101,6 +100,7 @@ class FirebaseService: Service() {
                 }
 
                 val result = task.result.value as Map<String, Map<String,Any>>
+                var groupNameToInterval = mutableMapOf<String, Interval>()
                 result.forEach{(key,value)-> // each group name and its interval
                     var interval = Interval(IntervalType.Daily, LocalTime.of(0, 0))
                     value.forEach{(k,v)->
@@ -137,8 +137,9 @@ class FirebaseService: Service() {
                     }
                     groupNameToInterval.put(key, interval)
                 }
+                callback(groupNameToInterval)
             }
         }
-        return groupNameToInterval
+        return
     }
 }
