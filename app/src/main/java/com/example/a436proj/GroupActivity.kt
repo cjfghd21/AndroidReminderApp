@@ -20,6 +20,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import java.io.Serializable
 
 
@@ -33,6 +35,9 @@ class GroupActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGroupBinding
     private lateinit var firebaseService: FirebaseService
     private lateinit var notificationHandler: NotificationHandler
+    private val firebaseAuth : FirebaseAuth = requireNotNull(FirebaseAuth.getInstance())
+    private val database = Firebase.database
+    private val dbRef = database.getReference("contacts")
 
     private val notificationConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -256,9 +261,18 @@ class GroupActivity : AppCompatActivity() {
         viewModel.groups.value = list
         val callback = { groupNameToContacts: Map<String, List<Contact>> ->
             groupNameToContacts.forEach{(groupName, contacts) ->
-                viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
-                    SelectableGroups.Group(groupName, contacts)))
-                groupRV.updateGroupModelList(viewModel.groups.value!!)
+                Log.i("adding order","$groupName")
+                firebaseAuth.currentUser?.let{
+                    dbRef.child(it.uid).child(groupName).get().addOnCompleteListener(){name->
+                        var res = name.result.value as MutableMap<String, Any>
+                        var result = res["GroupName"] as String
+                        Log.i("adding name","$result")
+                        viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
+                            SelectableGroups.Group(result, contacts)))
+                        groupRV.updateGroupModelList(viewModel.groups.value!!)
+                    }
+                }
+
             }
         }
         firebaseService.getGroupNameToContacts(callback)
