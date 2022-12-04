@@ -1,6 +1,7 @@
 package com.example.a436proj
 
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -14,11 +15,14 @@ const val groupNameKey = "groupName"
 
 class Notification : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        // set intent to re-focus back to app upon click
+        val contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val notification = NotificationCompat.Builder(context, channelID)
             .setSmallIcon(android.R.drawable.stat_sys_warning)
             .setAutoCancel(true)
             .setContentTitle(getContentTitle())
             .setContentText(getContentText(intent))
+            .setContentIntent(contentIntent)
             .build()
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
