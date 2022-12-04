@@ -249,7 +249,7 @@ class GroupActivity : AppCompatActivity() {
                 }
 
                 viewModel.groups.value!!.removeAt(index)
-                groupRV.updateGroupModelList(viewModel.groups.value!!, true, index)
+                groupRV.updateGroupModelList(viewModel.groups.value!!, true, index-1)
 
                 //For Chris: Connect the back end here. Update firebase with the new value of viewModel.groups.value!!
             }
@@ -275,6 +275,24 @@ class GroupActivity : AppCompatActivity() {
             builder.setView(inputEditText)
 
             builder.setPositiveButton("Add Group") { dialog, which ->
+                if(viewModel.groups != null){
+                    Log.i("if duplicate check","xd")
+                    for(i in 0 until (viewModel.groups.value!!.size!!)){
+                        Log.i("group name", viewModel.groups.value!![i].groupParent.groupName)
+                        Log.i("input name",inputEditText.text.toString())
+                        if(viewModel.groups.value!![i].groupParent.groupName == inputEditText.text.toString()){
+                            Log.i("duplicate found", "duplicate found")
+                            Toast.makeText(
+                                this,
+                                "Group name already exists.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@setPositiveButton
+                        }
+                    }
+                }
+
+
                 if(inputEditText.text.toString() == "") {
                     Toast.makeText(
                         this,
