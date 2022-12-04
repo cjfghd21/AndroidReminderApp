@@ -2,21 +2,24 @@ package com.example.a436proj
 
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
-import java.io.Serializable
+import android.os.Binder
+import android.os.IBinder
 import java.time.LocalDateTime
 import java.util.*
 
-class NotificationHandler(alarmManager: AlarmManager, applicationContext: Context) : Serializable {
+class NotificationHandler : Service() {
 
+    inner class LocalBinder : Binder() {
+        fun getService(): NotificationHandler = this@NotificationHandler
+    }
+    private val binder = LocalBinder()
     private var groupNameToInterval: MutableMap<String, Interval> = mutableMapOf()
-    private var alarmManager: AlarmManager
-    private var applicationContext: Context
 
-    init {
-        this.alarmManager = alarmManager
-        this.applicationContext = applicationContext
+    override fun onBind(p0: Intent?): IBinder? {
+        return binder
     }
 
     fun setIntervalForGroup(groupName: String, interval: Interval) {
@@ -26,39 +29,43 @@ class NotificationHandler(alarmManager: AlarmManager, applicationContext: Contex
     fun cancelAllNotifications() {
         groupNameToInterval.forEach {entry ->
             val pendingIntent = createPendingIntent(entry.key)
-            alarmManager.cancel(pendingIntent)
+            getAlarmManager().cancel(pendingIntent)
         }
         // clear information just in case
         groupNameToInterval = mutableMapOf()
     }
 
     fun scheduleNotification(groupName: String, interval: Interval) {
+        System.out.println("dang")
         val pendingIntent = createPendingIntent(groupName)
 
         // cancel if previously tied intent exists
-        alarmManager.cancel(pendingIntent)
+        getAlarmManager().cancel(pendingIntent)
 
         // set new alarm
         val time = getTime(interval)
-        alarmManager.setExactAndAllowWhileIdle(
+        getAlarmManager().setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             time,
             pendingIntent
         )
     }
 
+    private fun getAlarmManager() : AlarmManager{
+        return getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    }
+
     private fun createPendingIntent(groupName: String): PendingIntent {
         val intent = Intent(this.applicationContext, Notification::class.java)
         // set action with groupName so that intent's filterEquals is true for the same group.
-        intent.setAction(groupName)
+        intent.action = groupName
         intent.putExtra(content, String.format("Send notification to group %s", groupName))
-        val pendingIntent = PendingIntent.getBroadcast(
+        return PendingIntent.getBroadcast(
             applicationContext,
             notificationID,
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        return pendingIntent
     }
 
     private fun getTime(interval: Interval): Long {

@@ -4,10 +4,9 @@ import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
 import android.os.Bundle
+import android.os.IBinder
 import android.text.InputType
 import android.util.Log
 import android.view.Menu
@@ -45,6 +44,15 @@ class GroupActivity : AppCompatActivity() {
     private val reminderRef = database.getReference("Reminder")
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var notificationHandler: NotificationHandler
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as NotificationHandler.LocalBinder
+            notificationHandler = binder.getService()
+            populateGroupIntervals()
+        }
+        override fun onServiceDisconnected(arg0: ComponentName) {}
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -86,7 +94,13 @@ class GroupActivity : AppCompatActivity() {
 
         }
 
-        //once logged in, gets user info from database then update ui accordingly.
+        // setup notification channel and start handler
+        creationNotificationChannel()
+        Intent(this, NotificationHandler::class.java).also {intent ->
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+
+        // once logged in, gets user info from database then update ui accordingly.
         firebaseAuth.currentUser?.let {
               viewModel.groups.value = list
               //retrieving group and contact info
@@ -120,64 +134,8 @@ class GroupActivity : AppCompatActivity() {
                             groupRV.updateGroupModelList(viewModel.groups.value!!)
                         }
                     }
-                }else{
+                } else{
                     Log.e("firebase", "Error getting data from contacts")
-                }
-            }
-
-            notificationHandler = NotificationHandler(
-                getSystemService(Context.ALARM_SERVICE) as AlarmManager,
-                applicationContext)
-            // setup notification channel
-            creationNotificationChannel()
-
-            //get reminder info and set reminder
-            reminderRef.child(it.uid).get().addOnCompleteListener(){task->
-                if(task.isSuccessful){
-                    if(task.result.value != null) {
-                        val result = task.result.value as Map<String, Map<String,Any>>
-                        result.forEach{(key,value)-> // each group name and its interval
-                            var interval = Interval(IntervalType.Daily, LocalTime.of(0, 0))
-                            value.forEach{(k,v)->
-                                 when(k) {
-                                    "intervalType" ->
-                                        if (v == "Daily") {
-                                            interval.intervalType = IntervalType.Daily
-                                            interval.weeklyInterval =
-                                                WeeklyInterval(DayOfWeek.MONDAY, 1)
-                                        } else if (v == "Weekly") {
-                                            interval.intervalType = IntervalType.Weekly
-                                            reminderRef.child(it.uid).child(key).child("weeklyInterval")
-                                                .get().addOnCompleteListener() { week ->
-                                                val result = week.result.value as Map<String, Any>
-                                                val day = result["day"]
-                                                val weekInterval : Long = result["weekInterval"] as Long
-                                                var dayOfWeek = DayOfWeek.MONDAY
-                                                when (day) {
-                                                    "MONDAY" -> dayOfWeek = DayOfWeek.MONDAY
-                                                    "TUESDAY" -> dayOfWeek = DayOfWeek.TUESDAY
-                                                    "WEDNESDAY" -> dayOfWeek = DayOfWeek.WEDNESDAY
-                                                    "THURSDAY" -> dayOfWeek = DayOfWeek.THURSDAY
-                                                    "FRIDAY" -> dayOfWeek = DayOfWeek.FRIDAY
-                                                    "SATURDAY" -> dayOfWeek = DayOfWeek.SATURDAY
-                                                    "SUNDAY" -> dayOfWeek = DayOfWeek.SUNDAY
-                                                }
-                                                interval.weeklyInterval =
-                                                    WeeklyInterval(dayOfWeek, weekInterval.toInt())
-                                            }
-                                        }
-                                    "lastUpdateTimeStamp" -> interval.lastUpdateTimestamp =
-                                        LocalDateTime.now()
-                                    "timeToSendNotification" -> interval.timeToSendNotification =
-                                        LocalTime.of((v as Map<String,Int>)["hour"]!! ,v["minute"]!!, 0)
-                                }
-                            }
-                            notificationHandler.setIntervalForGroup(key, interval)
-                            notificationHandler.scheduleNotification(key, interval)
-                        }
-                    } else{
-                        Log.e("firebase", "Error getting data from reminder")
-                    }
                 }
             }
         }
@@ -223,8 +181,6 @@ class GroupActivity : AppCompatActivity() {
 
                 var interval = data?.extras?.get("interval") as? Interval
                 if (interval != null) {
-                    System.out.println("storing intervalll")
-                    System.out.println(firebaseAuth.currentUser?.uid)
                     //storing reminder to group
                     firebaseAuth.currentUser?.let {
                         reminderRef.child(it.uid).child(groupName).setValue(interval)
@@ -336,6 +292,59 @@ class GroupActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+    }
+
+    private fun populateGroupIntervals() {
+        firebaseAuth.currentUser?.let {
+            //get reminder info and set reminder
+            reminderRef.child(it.uid).get().addOnCompleteListener(){task->
+                if (!task.isSuccessful || task.result.value == null) {
+                    Log.e("firebase", "Error getting data from reminder")
+                    return@addOnCompleteListener
+                }
+
+                val result = task.result.value as Map<String, Map<String,Any>>
+                result.forEach{(key,value)-> // each group name and its interval
+                    var interval = Interval(IntervalType.Daily, LocalTime.of(0, 0))
+                    value.forEach{(k,v)->
+                        when(k) {
+                            "intervalType" ->
+                                if (v == "Daily") {
+                                    interval.intervalType = IntervalType.Daily
+                                    interval.weeklyInterval =
+                                        WeeklyInterval(DayOfWeek.MONDAY, 1)
+                                } else if (v == "Weekly") {
+                                    interval.intervalType = IntervalType.Weekly
+                                    reminderRef.child(it.uid).child(key).child("weeklyInterval")
+                                        .get().addOnCompleteListener() { week ->
+                                            val result = week.result.value as Map<String, Any>
+                                            val day = result["day"]
+                                            val weekInterval : Long = result["weekInterval"] as Long
+                                            var dayOfWeek = DayOfWeek.MONDAY
+                                            when (day) {
+                                                "MONDAY" -> dayOfWeek = DayOfWeek.MONDAY
+                                                "TUESDAY" -> dayOfWeek = DayOfWeek.TUESDAY
+                                                "WEDNESDAY" -> dayOfWeek = DayOfWeek.WEDNESDAY
+                                                "THURSDAY" -> dayOfWeek = DayOfWeek.THURSDAY
+                                                "FRIDAY" -> dayOfWeek = DayOfWeek.FRIDAY
+                                                "SATURDAY" -> dayOfWeek = DayOfWeek.SATURDAY
+                                                "SUNDAY" -> dayOfWeek = DayOfWeek.SUNDAY
+                                            }
+                                            interval.weeklyInterval =
+                                                WeeklyInterval(dayOfWeek, weekInterval.toInt())
+                                        }
+                                }
+                            "lastUpdateTimeStamp" -> interval.lastUpdateTimestamp =
+                                LocalDateTime.now()
+                            "timeToSendNotification" -> interval.timeToSendNotification =
+                                LocalTime.of((v as Map<String,Int>)["hour"]!! ,v["minute"]!!, 0)
+                        }
+                    }
+                    notificationHandler.setIntervalForGroup(key, interval)
+                    notificationHandler.scheduleNotification(key, interval)
+                }
+            }
+        }
     }
 
     private fun creationNotificationChannel() {
