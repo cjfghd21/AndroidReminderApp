@@ -14,7 +14,7 @@ class GroupViewModel : ViewModel(), DefaultLifecycleObserver {
 
     private val _groupsInitialized = MutableLiveData<Boolean>()
 
-    internal val groupsInitialzed : MutableLiveData<Boolean>
+    internal val groupsInitialized : MutableLiveData<Boolean>
             get() = _groupsInitialized
 
     init {

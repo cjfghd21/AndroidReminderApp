@@ -19,11 +19,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
 import java.io.Serializable
-import java.time.DayOfWeek
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 
@@ -35,18 +31,27 @@ class GroupActivity : AppCompatActivity() {
     private lateinit var viewModel : GroupViewModel
     private lateinit var pref: SharedPreferences
     private lateinit var binding: ActivityGroupBinding
-    private val database = Firebase.database
-    private val dbRef = database.getReference("contacts")
-    private val reminderRef = database.getReference("Reminder")
-    private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var firebaseService: FirebaseService
     private lateinit var notificationHandler: NotificationHandler
 
-    private val connection = object : ServiceConnection {
+    private val notificationConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as NotificationHandler.LocalBinder
             notificationHandler = binder.getService()
             populateGroupIntervals()
         }
+        override fun onServiceDisconnected(arg0: ComponentName) {}
+    }
+
+    private val firebaseConnection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as FirebaseService.LocalBinder
+            firebaseService = binder.getService()
+            populateGroups()
+            // bind notification handler after connecting firebase
+            bindNotificationHandler()
+        }
+
         override fun onServiceDisconnected(arg0: ComponentName) {}
     }
 
@@ -60,7 +65,6 @@ class GroupActivity : AppCompatActivity() {
             .build()
 
         googleAuth = GoogleSignIn.getClient(this,signInRequest)
-        firebaseAuth = requireNotNull(FirebaseAuth.getInstance())
         binding = ActivityGroupBinding.inflate(layoutInflater)
 
         supportActionBar!!.title = "Groups"
@@ -90,56 +94,16 @@ class GroupActivity : AppCompatActivity() {
 
         }
 
+        // setup firebase connection
+        Intent(this, FirebaseService::class.java).also {intent ->
+            bindService(intent, firebaseConnection, Context.BIND_AUTO_CREATE)
+        }
         // setup notification channel and start handler
         creationNotificationChannel()
-        Intent(this, NotificationHandler::class.java).also {intent ->
-            bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        }
 
-        // once logged in, gets user info from database then update ui accordingly.
-        firebaseAuth.currentUser?.let {
-              viewModel.groups.value = list
-              //retrieving group and contact info
-              dbRef.child(it.uid).get().addOnCompleteListener(){ task->
-                if(task.isSuccessful){
-                    if(task.result.value != null) {
-                        val result = task.result.value as Map<String, Any>
-                        Log.i("firebase value", "Got value ${result!!::class.java.typeName} in Group Activity")
-                        Log.i("firebase result", "User is $result")
-                        result.forEach{(key,v) ->
-                            var contact : MutableList<SelectableGroups.Group.Contact> = mutableListOf()
-                            if(v != "empty"){
-                                val value = v as MutableList<Map<String,Any>>
-                                for (i in 0 until value.size) {
-                                    val new = SelectableGroups.Group.Contact("", "", "")
-                                    value[i].forEach { (key, value) ->
-                                        when (key) {
-                                            "groupSettingsIsChecked" -> new.groupSettingsIsChecked =
-                                                value as Boolean
-                                            "name" -> new.name = value as String
-                                            "phoneNumber" -> new.phoneNumber = value as String
-                                            "reminderText" -> new.reminderText = value as String
-                                        }
-                                    }
-                                    contact.add(new)
-                                }
-                            }
-                            viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
-                                SelectableGroups.Group(key,
-                                    contact)))
-                            groupRV.updateGroupModelList(viewModel.groups.value!!)
-                        }
-                    }
-                } else{
-                    Log.e("firebase", "Error getting data from contacts")
-                }
-            }
-        }
-        //End of updating ui with database data.
-
-        if (!viewModel.groupsInitialzed.value!!) {
+        if (!viewModel.groupsInitialized.value!!) {
             viewModel.groups.value = list
-            viewModel.groupsInitialzed.value = true
+            viewModel.groupsInitialized.value = true
         }
 
         groupRV.settingsClickListener = GroupRecyclerViewAdapter.OnSettingsClickListener { model, position ->
@@ -169,18 +133,15 @@ class GroupActivity : AppCompatActivity() {
                     else {
                         groupRV.updateGroupModelList(viewModel.groups.value!!)
                     }
-                    firebaseAuth.currentUser?.let {
-                        dbRef.child(it.uid).child(viewModel.groups.value!![index].groupParent.groupName).
-                            setValue(viewModel.groups.value!![index].groupParent.contacts)
-                    }
+                    firebaseService.setContacts(
+                        viewModel.groups.value!![index].groupParent.groupName,
+                        viewModel.groups.value!![index].groupParent.contacts)
                 }
 
                 var interval = data?.extras?.get("interval") as? Interval
                 if (interval != null) {
                     //storing reminder to group
-                    firebaseAuth.currentUser?.let {
-                        reminderRef.child(it.uid).child(groupName).setValue(interval)
-                    }
+                    firebaseService.setInterval(groupName, interval)
                     notificationHandler.setIntervalForGroup(groupName, interval)
                     notificationHandler.scheduleNotification(groupName, interval)
                     showAlert(interval) // moved here so when it re-creates, it doesn't show the same message.
@@ -195,11 +156,7 @@ class GroupActivity : AppCompatActivity() {
                 val name = viewModel.groups.value!![index].groupParent.groupName
 
                 //deleting from database
-                firebaseAuth.currentUser?.let {
-                    dbRef.child(it.uid).child(name).removeValue()  //delete group contact
-                    reminderRef.child(it.uid).child(name).removeValue() //delete alarm info.
-                }
-
+                firebaseService.deleteGroupInfo(name)
                 viewModel.groups.value!!.removeAt(index)
                 val shouldCollapse = index != viewModel.groups.value!!.size
                 groupRV.updateGroupModelList(viewModel.groups.value!!, shouldCollapse, index)
@@ -251,18 +208,14 @@ class GroupActivity : AppCompatActivity() {
                         "Group name can't be empty.",
                         Toast.LENGTH_SHORT
                     ).show()
-                }
-                else {
+                } else {
                     //For Chris: Here we create a new group within the add() call and update the viewModel's list
                     //of groups. Then we update the RecyclerView using groupRV.updateGroupModelList() with the
                     //new value of the viewModel.groups
                     viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
-                        SelectableGroups.Group(inputEditText.text.toString(),
-                            mutableListOf<SelectableGroups.Group.Contact>())))
+                        SelectableGroups.Group(inputEditText.text.toString(), mutableListOf())))
 
-                    firebaseAuth.currentUser?.let {
-                        dbRef.child(it.uid).child(inputEditText.text.toString()).setValue("empty")
-                    }
+                    firebaseService.setEmptyContacts(inputEditText.text.toString())
                     groupRV.updateGroupModelList(viewModel.groups.value!!)
 
                     //For Chris: Connect the back end here. Update firebase with the new value of viewModel.groups.value!!
@@ -308,54 +261,21 @@ class GroupActivity : AppCompatActivity() {
     override fun onBackPressed() {
     }
 
-    private fun populateGroupIntervals() {
-        firebaseAuth.currentUser?.let {
-            //get reminder info and set reminder
-            reminderRef.child(it.uid).get().addOnCompleteListener(){task->
-                if (!task.isSuccessful || task.result.value == null) {
-                    Log.e("firebase", "Error getting data from reminder")
-                    return@addOnCompleteListener
-                }
+    private fun populateGroups() {
+        viewModel.groups.value = list
+        val groupNameToContact = firebaseService.getGroupNameToContact()
+        groupNameToContact.forEach{(groupName, contacts) ->
+            viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
+                SelectableGroups.Group(groupName, contacts)))
+            groupRV.updateGroupModelList(viewModel.groups.value!!)
+        }
+    }
 
-                val result = task.result.value as Map<String, Map<String,Any>>
-                result.forEach{(key,value)-> // each group name and its interval
-                    var interval = Interval(IntervalType.Daily, LocalTime.of(0, 0))
-                    value.forEach{(k,v)->
-                        when(k) {
-                            "intervalType" ->
-                                if (v == IntervalType.Daily.printableName) {
-                                    interval.intervalType = IntervalType.Daily
-                                    interval.weeklyInterval =
-                                        WeeklyInterval(DayOfWeek.MONDAY, 1)
-                                } else if (v == IntervalType.Weekly.printableName) {
-                                    interval.intervalType = IntervalType.Weekly
-                                    reminderRef.child(it.uid).child(key).child("weeklyInterval")
-                                        .get().addOnCompleteListener() { week ->
-                                            val result = week.result.value as Map<String, Any>
-                                            val day = result["day"]
-                                            val weekInterval : Long = result["weekInterval"] as Long
-                                            var dayOfWeek = DayOfWeek.MONDAY
-                                            when (day) {
-                                                "MONDAY" -> dayOfWeek = DayOfWeek.MONDAY
-                                                "TUESDAY" -> dayOfWeek = DayOfWeek.TUESDAY
-                                                "WEDNESDAY" -> dayOfWeek = DayOfWeek.WEDNESDAY
-                                                "THURSDAY" -> dayOfWeek = DayOfWeek.THURSDAY
-                                                "FRIDAY" -> dayOfWeek = DayOfWeek.FRIDAY
-                                                "SATURDAY" -> dayOfWeek = DayOfWeek.SATURDAY
-                                                "SUNDAY" -> dayOfWeek = DayOfWeek.SUNDAY
-                                            }
-                                            interval.weeklyInterval =
-                                                WeeklyInterval(dayOfWeek, weekInterval.toInt())
-                                        }
-                                }
-                            "timeToSendNotification" -> interval.timeToSendNotification =
-                                LocalTime.of((v as Map<String,Int>)["hour"]!! ,v["minute"]!!, 0)
-                        }
-                    }
-                    notificationHandler.setIntervalForGroup(key, interval)
-                    notificationHandler.scheduleNotification(key, interval)
-                }
-            }
+    private fun populateGroupIntervals() {
+        val groupNameToInterval = firebaseService.getGroupNameToInterval()
+        groupNameToInterval.forEach{(groupName, interval) ->
+            notificationHandler.setIntervalForGroup(groupName, interval)
+            notificationHandler.scheduleNotification(groupName, interval)
         }
     }
 
@@ -368,6 +288,12 @@ class GroupActivity : AppCompatActivity() {
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun bindNotificationHandler() {
+        Intent(this, NotificationHandler::class.java).also {intent ->
+            bindService(intent, notificationConnection, Context.BIND_AUTO_CREATE)
+        }
     }
 
     private fun showAlert(interval: Interval) {
