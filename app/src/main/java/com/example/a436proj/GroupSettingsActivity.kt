@@ -1,11 +1,7 @@
 package com.example.a436proj
 
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -29,19 +25,9 @@ class GroupSettingsActivity : AppCompatActivity() {
     private lateinit var firebaseAuth: FirebaseAuth
     private val database = Firebase.database
     private val reminderRef = database.getReference("Reminder")
-    private lateinit var notificationHandler: NotificationHandler
-
-    private val connection = object : ServiceConnection {
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            val binder = service as NotificationHandler.LocalBinder
-            notificationHandler = binder.getService()
-        }
-        override fun onServiceDisconnected(arg0: ComponentName) {}
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
         if (requestCode == 0) {
             if (resultCode == 1) {
                 //For Chris: resultList is the contacts that are being added to the group
@@ -63,8 +49,10 @@ class GroupSettingsActivity : AppCompatActivity() {
                 firebaseAuth.currentUser?.let {
                     reminderRef.child(it.uid).child(groupName).setValue(interval)
                 }
-                notificationHandler.setIntervalForGroup(groupName, interval)
-                notificationHandler.scheduleNotification(groupName, interval)
+                val intent = Intent(this, NotificationHandler::class.java)
+                intent.putExtra("groupName", groupName)
+                intent.putExtra("interval", interval)
+                this.startService(intent)
                 showAlert(interval)
             }
             return
@@ -88,10 +76,6 @@ class GroupSettingsActivity : AppCompatActivity() {
         val contactsList : MutableList<SelectableGroups.Group.Contact> = intent.extras?.get("contactsList") as MutableList<SelectableGroups.Group.Contact>
         groupIndex = intent.extras?.get("groupIndex") as Int
         groupName = intent.getStringExtra("groupName")!!
-
-        Intent(this, NotificationHandler::class.java).also {intent ->
-            bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        }
 
         //val notificationsList = intent.extras
 

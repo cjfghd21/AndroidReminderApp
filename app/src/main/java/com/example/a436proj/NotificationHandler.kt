@@ -22,6 +22,20 @@ class NotificationHandler : Service() {
         return binder
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent == null) {
+            return START_NOT_STICKY
+        } else if (!intent!!.hasExtra("groupName")) {
+            return START_NOT_STICKY
+        }
+
+        val groupName = intent!!.getStringExtra("groupName")!!
+        val interval = intent!!.getSerializableExtra("interval") as Interval
+        setIntervalForGroup(groupName, interval)
+        scheduleNotification(groupName, interval)
+        return START_NOT_STICKY
+    }
+
     fun setIntervalForGroup(groupName: String, interval: Interval) {
         groupNameToInterval[groupName] = interval
     }
