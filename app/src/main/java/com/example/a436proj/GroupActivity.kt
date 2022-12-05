@@ -125,7 +125,7 @@ class GroupActivity : AppCompatActivity() {
                 //We update the viewModel's groups list at the groupIndex that we get from the GroupSettingsActivity with the
                 //new value of the contacts that we got from the GroupSettingsActivity. Then we update the RecyclerView
                 var index = data?.extras?.get("groupIndex") as? Int
-                var groupName = viewModel.groups.value!![index!!].groupParent.groupName
+
                 var contacts = data?.extras?.get("resultContactsList") as? MutableList<SelectableGroups.Group.Contact>
                 if (contacts != null && index != null) {
                     viewModel.groups.value!![index].groupParent.contacts = contacts
@@ -142,8 +142,10 @@ class GroupActivity : AppCompatActivity() {
                 }
 
                 var interval = data?.extras?.get("interval") as? Interval
-                if (interval != null) {
+
+                if (interval != null && index != null) {
                     //storing reminder to group
+                    var groupName = viewModel.groups.value!![index!!].groupParent.groupName
                     firebaseAuth.currentUser?.let {
                         reminderRef.child(it.uid).child(groupName).setValue(interval)
                     }
