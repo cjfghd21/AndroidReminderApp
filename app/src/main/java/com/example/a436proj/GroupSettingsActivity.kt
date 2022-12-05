@@ -31,10 +31,8 @@ class GroupSettingsActivity : AppCompatActivity() {
                 Log.i("contacts value","viewModel is ${viewModel.contactsList.value!!!!::class.java.typeName}")
 
                 contactsRV.updateContactsList(viewModel.contactsList.value!!)
-                intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
-                intent.putExtra("groupIndex", groupIndex)
-                setResult(RESULT_OK, intent)
-
+                viewModel.resultIntent.value!!.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
+                viewModel.resultIntent.value!!.putExtra("groupIndex", groupIndex)
                 //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
             }
         } else if (requestCode == NotificationsActivity.requestCode) {
@@ -147,10 +145,8 @@ class GroupSettingsActivity : AppCompatActivity() {
             //result code RESULT_OK and the intent we created
             viewModel.deleteChecked()
             contactsRV.updateContactsList(viewModel.contactsList.value!!)
-            val intent = Intent()
-            intent.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
-            intent.putExtra("groupIndex", groupIndex)
-            setResult(RESULT_OK, intent)
+            viewModel.resultIntent.value!!.putExtra("resultContactsList", viewModel.contactsList.value!! as Serializable)
+            viewModel.resultIntent.value!!.putExtra("groupIndex", groupIndex)
 
             //For Chris: Connect back end here. Update firebase with the updated viewModel.ContactsList.value!!
         }
@@ -188,5 +184,10 @@ class GroupSettingsActivity : AppCompatActivity() {
         }
 
         return true
+    }
+
+    override fun onBackPressed() {
+        setResult(RESULT_OK,viewModel.resultIntent.value!!)
+        super.onBackPressed()
     }
 }

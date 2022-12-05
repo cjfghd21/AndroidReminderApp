@@ -63,6 +63,7 @@ class GroupActivity : AppCompatActivity() {
         firebaseAuth = requireNotNull(FirebaseAuth.getInstance())
         binding = ActivityGroupBinding.inflate(layoutInflater)
 
+
         supportActionBar!!.title = "Groups"
 
         setContentView(binding.root)
@@ -97,50 +98,15 @@ class GroupActivity : AppCompatActivity() {
         }
 
         // once logged in, gets user info from database then update ui accordingly.
-        firebaseAuth.currentUser?.let {
-              viewModel.groups.value = list
-              //retrieving group and contact info
-              dbRef.child(it.uid).get().addOnCompleteListener(){ task->
-                if(task.isSuccessful){
-                    if(task.result.value != null) {
-                        val result = task.result.value as Map<String, Any>
-                        Log.i("firebase value", "Got value ${result!!::class.java.typeName} in Group Activity")
-                        Log.i("firebase result", "User is $result")
-                        result.forEach{(key,v) ->
-                            var contact : MutableList<SelectableGroups.Group.Contact> = mutableListOf()
-                            if(v != "empty"){
-                                val value = v as MutableList<Map<String,Any>>
-                                for (i in 0 until value.size) {
-                                    val new = SelectableGroups.Group.Contact("", "", "")
-                                    value[i].forEach { (key, value) ->
-                                        when (key) {
-                                            "groupSettingsIsChecked" -> new.groupSettingsIsChecked =
-                                                value as Boolean
-                                            "name" -> new.name = value as String
-                                            "phoneNumber" -> new.phoneNumber = value as String
-                                            "reminderText" -> new.reminderText = value as String
-                                        }
-                                    }
-                                    contact.add(new)
-                                }
-                            }
-                            viewModel.groups.value!!.add(ExpandableGroupModel(ExpandableGroupModel.PARENT,
-                                SelectableGroups.Group(key,
-                                    contact)))
-                            groupRV.updateGroupModelList(viewModel.groups.value!!)
-                        }
-                    }
-                } else{
-                    Log.e("firebase", "Error getting data from contacts")
-                }
-            }
-        }
         //End of updating ui with database data.
 
         if (!viewModel.groupsInitialzed.value!!) {
             viewModel.groups.value = list
+            updateUi()
             viewModel.groupsInitialzed.value = true
         }
+
+
 
         groupRV.settingsClickListener = GroupRecyclerViewAdapter.OnSettingsClickListener { model, position ->
             var groupSettingsIntent = Intent(this, GroupSettingsActivity::class.java)
@@ -158,10 +124,10 @@ class GroupActivity : AppCompatActivity() {
                 //For Chris: This if block is what gets run if the GroupSettingsActivity returns normally using the back button
                 //We update the viewModel's groups list at the groupIndex that we get from the GroupSettingsActivity with the
                 //new value of the contacts that we got from the GroupSettingsActivity. Then we update the RecyclerView
-                var index = data?.extras?.get("groupIndex") as Int
-                var groupName = viewModel.groups.value!![index].groupParent.groupName
+                var index = data?.extras?.get("groupIndex") as? Int
+                var groupName = viewModel.groups.value!![index!!].groupParent.groupName
                 var contacts = data?.extras?.get("resultContactsList") as? MutableList<SelectableGroups.Group.Contact>
-                if (contacts != null) {
+                if (contacts != null && index != null) {
                     viewModel.groups.value!![index].groupParent.contacts = contacts
                     if (viewModel.groups.value!![index].isExpanded) {
                         groupRV.updateGroupModelList(viewModel.groups.value!!, shouldExpand = true, expandParentIndex = index)
@@ -391,4 +357,56 @@ class GroupActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun updateUi() {
+            firebaseAuth.currentUser?.let {
+                //retrieving group and contact info
+                dbRef.child(it.uid).get().addOnCompleteListener() { task ->
+                    if (task.isSuccessful) {
+                        if (task.result.value != null) {
+                            val result = task.result.value as Map<String, Any>
+                            Log.i(
+                                "firebase value",
+                                "Got value ${result!!::class.java.typeName} in Group Activity"
+                            )
+                            Log.i("firebase result", "User is $result")
+                            result.forEach { (key, v) ->
+                                var contact: MutableList<SelectableGroups.Group.Contact> =
+                                    mutableListOf()
+                                if (v != "empty") {
+                                    val value = v as MutableList<Map<String, Any>>
+                                    for (i in 0 until value.size) {
+                                        val new = SelectableGroups.Group.Contact("", "", "")
+                                        value[i].forEach { (key, value) ->
+                                            when (key) {
+                                                "groupSettingsIsChecked" -> new.groupSettingsIsChecked =
+                                                    value as Boolean
+                                                "name" -> new.name = value as String
+                                                "phoneNumber" -> new.phoneNumber = value as String
+                                                "reminderText" -> new.reminderText = value as String
+                                            }
+                                        }
+                                        contact.add(new)
+                                    }
+                                    viewModel.groups.value!!.add(
+                                        ExpandableGroupModel(
+                                            ExpandableGroupModel.PARENT,
+                                            SelectableGroups.Group(
+                                                key,
+                                                contact
+                                            )
+                                        )
+                                    )
+                                }
+                            }
+                            groupRV.updateGroupModelList(viewModel.groups.value!!)
+                        }
+                    } else {
+                        Log.e("firebase", "Error getting data from contacts")
+                    }
+                }
+            }
+
+    }
+
 }
