@@ -190,6 +190,14 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
 
     fun updateGroupModelList(newList : MutableList<ExpandableGroupModel>, shouldCollapse : Boolean = false, previousGroupIndex : Int = 0, shouldExpand : Boolean = false, expandParentIndex : Int = 0) {
         groupModelList = newList
+
+        for (i in 0 until groupModelList.size) {
+            Log.i("parent of groupmodel", groupModelList[i].groupParent.groupName)
+            for (j in 0 until groupModelList[i].groupParent.contacts.size) {
+                Log.i("child of groupmodel", groupModelList[i].groupParent.contacts[j].name)
+            }
+        }
+
         if (shouldCollapse) {
             collapseRow(previousGroupIndex)
         }

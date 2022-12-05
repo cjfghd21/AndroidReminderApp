@@ -128,19 +128,18 @@ class GroupActivity : AppCompatActivity() {
                 //For Chris: This if block is what gets run if the GroupSettingsActivity returns normally using the back button
                 //We update the viewModel's groups list at the groupIndex that we get from the GroupSettingsActivity with the
                 //new value of the contacts that we got from the GroupSettingsActivity. Then we update the RecyclerView
-                var index = data?.extras?.get("groupIndex") as Int
-                var group = viewModel.groups.value!![index]
+                var index = data?.extras?.get("groupIndex") as? Int
                 var contacts = data?.extras?.get("resultContactsList") as? MutableList<Contact>
-                if (contacts != null) {
-                    group.groupParent.contacts = contacts
-                    if (group.isExpanded) {
+                if (contacts != null && index != null) {
+                    viewModel.groups.value!![index].groupParent.contacts = contacts
+                    if (viewModel.groups.value!![index].isExpanded) {
                         groupRV.updateGroupModelList(viewModel.groups.value!!, shouldExpand = true, expandParentIndex = index)
                     } else {
                         groupRV.updateGroupModelList(viewModel.groups.value!!)
                     }
                     firebaseService.setContacts(
-                        group.groupParent.groupName,
-                        group.groupParent.contacts)
+                        viewModel.groups.value!![index].groupParent.groupName,
+                        viewModel.groups.value!![index].groupParent.contacts)
                 }
             }
 
