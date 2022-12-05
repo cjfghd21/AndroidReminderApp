@@ -15,6 +15,7 @@ import com.example.a436proj.databinding.ActivityNotificationsBinding
 import java.io.Serializable
 import java.time.DayOfWeek
 import java.time.LocalTime
+import kotlin.math.min
 
 class NotificationsActivity : AppCompatActivity() {
 
@@ -34,6 +35,10 @@ class NotificationsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         viewModel = ViewModelProvider(this)[NotificationsViewModel::class.java]
+
+        binding.timePicker.setOnTimeChangedListener { _, hour, minute ->
+            viewModel.setTime(hour, minute)
+        }
 
         binding.btnNotificationSave.setOnClickListener {
             save(true, binding.timePicker)
@@ -112,6 +117,8 @@ class NotificationsActivity : AppCompatActivity() {
         }
 
         val interval : Interval = viewModel.getInterval()
+        binding.timePicker.hour = interval.timeToSendNotification.hour
+        binding.timePicker.minute = interval.timeToSendNotification.minute
         if (interval.intervalType == IntervalType.Daily) {
             binding.btnDaily.isChecked = true
             displayWeeklyButtons(binding, View.GONE)

@@ -6,10 +6,14 @@ import java.time.LocalTime
 
 class NotificationsViewModel : ViewModel() {
 
-    private var interval: Interval = Interval(IntervalType.Daily, LocalTime.of(0, 0))
+    private var interval: Interval = Interval(IntervalType.Daily, LocalTime.now())
 
     fun setDailyInterval() {
         interval.intervalType = IntervalType.Daily
+    }
+
+    fun setTime(hour: Int, minute: Int) {
+        interval.timeToSendNotification = LocalTime.of(hour, minute)
     }
 
     fun setWeeklyInterval(day: DayOfWeek, weekInterval: Int) {
