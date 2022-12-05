@@ -64,12 +64,14 @@ class RegistrationActivity : AppCompatActivity() {
 
             return
         }
-        binding.progressBar.visibility = View.VISIBLE  //if valid email and pass, show progress bar
+//        binding.progressBar.visibility = View.VISIBLE  //if valid email and pass, show progress bar
 
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
-                binding.progressBar.visibility = View.GONE  // progress bar gone
+//                binding.progressBar.visibility = View.GONE  // progress bar gone
+                Log.i("Our logg", "our log here@@@@@@@@@@")
                 if (task.isSuccessful) {  //registration success
+
                     Toast.makeText(
                         this,
                         getString(R.string.register_success_string),
