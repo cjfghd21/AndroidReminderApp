@@ -73,12 +73,16 @@ class RegistrationActivity : AppCompatActivity() {
 //                binding.progressBar.visibility = View.GONE  // progress bar gone
                 Log.i("Our logg", "our log here@@@@@@@@@@")
                 if (task.isSuccessful) {  //registration success
-
                     Toast.makeText(
                         this,
-                        getString(R.string.register_success_string),
+                        getString(R.string.register_success_string)+ " Email verification sent",
                         Toast.LENGTH_LONG
                     ).show()
+
+                    auth.signInWithEmailAndPassword(email,password).addOnCompleteListener(this){task->
+                        auth.currentUser?.sendEmailVerification()
+                    }
+
                     var dbRef = database.getReference("User")
                     val use = User(email,password)  //data format to pass
                     dbRef.child(auth.uid!!).setValue(use)

@@ -18,6 +18,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.tasks.await
 
 
 class LoginActivity : AppCompatActivity() {
@@ -80,38 +81,50 @@ class LoginActivity : AppCompatActivity() {
             ).show()
             return
         }
-
        binding.progressBar.visibility = View.VISIBLE
 
-       firebaseAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener{
-           task-> binding.progressBar.visibility = View.GONE
-           if(task.isSuccessful){
+       firebaseAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener{ task->
+           binding.progressBar.visibility = View.GONE
+           if(!(firebaseAuth.currentUser!!.isEmailVerified)){
                Toast.makeText(
                    this,
-                   "Login Success",
+                   "Please verify email before login",
                    Toast.LENGTH_LONG
                ).show()
+           }
 
-               //
-               var dbRef = database.getReference("User")
-               dbRef.child(firebaseAuth.uid!!).child("email").get() //getting email from database <- need to change to data once we know which data are going to be stored.
-               //update viewModel values with data retrieved.
+           else if(task.isSuccessful && firebaseAuth.currentUser != null) {
+                   Toast.makeText(
+                       this,
+                       "Login Success",
+                       Toast.LENGTH_LONG
+                   ).show()
 
-               //write to shared pref current credential
-               with(pref.edit()){
-                   putString("email", email)
-                   putString("password", password)
-                   apply()
-               }
 
-               startActivity(Intent(this, GroupActivity::class.java))
-               finishAffinity()
-           }else{
+                   //
+                   var dbRef = database.getReference("User")
+                   dbRef.child(firebaseAuth.uid!!).child("email")
+                       .get() //getting email from database <- need to change to data once we know which data are going to be stored.
+                   //update viewModel values with data retrieved.
+
+                   //write to shared pref current credential
+                   with(pref.edit()) {
+                       putString("email", email)
+                       putString("password", password)
+                       apply()
+                   }
+
+                   startActivity(Intent(this, GroupActivity::class.java))
+                   finishAffinity()
+
+           }
+           else{
                Toast.makeText(
                    this,
                    "Login failed! Please try again later",
                    Toast.LENGTH_LONG
                ).show()
+
            }
        }
     }
