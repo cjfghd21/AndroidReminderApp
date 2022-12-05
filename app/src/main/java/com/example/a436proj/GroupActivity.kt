@@ -36,8 +36,10 @@ class GroupActivity : AppCompatActivity() {
     private val database = Firebase.database
     private val dbRef = database.getReference("contacts")
     private val reminderRef = database.getReference("Reminder")
+    private val nameRef = database.getReference("GroupNames")
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var notificationHandler: NotificationHandler
+
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -132,10 +134,12 @@ class GroupActivity : AppCompatActivity() {
                     else {
                         groupRV.updateGroupModelList(viewModel.groups.value!!)
                     }
-                    firebaseAuth.currentUser?.let {
-                        dbRef.child(it.uid).child(viewModel.groups.value!![index].groupParent.groupName).
-                            setValue(viewModel.groups.value!![index].groupParent.contacts)
-                    }
+
+                    setContacts(viewModel.groups.value!![index].groupParent.groupName,
+                        viewModel.groups.value!![index].groupParent.contacts)
+
+
+
                 }
             }
 
@@ -147,11 +151,7 @@ class GroupActivity : AppCompatActivity() {
                 val name = viewModel.groups.value!![index].groupParent.groupName
 
                 //deleting from database
-                firebaseAuth.currentUser?.let {
-                    dbRef.child(it.uid).child(name).removeValue()  //delete group contact
-                    reminderRef.child(it.uid).child(name).removeValue() //delete alarm info.
-                }
-
+                deleteGroupInfo(name)
                 viewModel.groups.value!!.removeAt(index)
                 val shouldCollapse = index != viewModel.groups.value!!.size
                 groupRV.updateGroupModelList(viewModel.groups.value!!, shouldCollapse, index)
@@ -212,9 +212,7 @@ class GroupActivity : AppCompatActivity() {
                         SelectableGroups.Group(inputEditText.text.toString(),
                             mutableListOf<SelectableGroups.Group.Contact>())))
 
-                    firebaseAuth.currentUser?.let {
-                        dbRef.child(it.uid).child(inputEditText.text.toString()).setValue("empty")
-                    }
+                    setEmptyContacts(inputEditText.text.toString())
                     groupRV.updateGroupModelList(viewModel.groups.value!!)
 
                     //For Chris: Connect the back end here. Update firebase with the new value of viewModel.groups.value!!
@@ -326,51 +324,84 @@ class GroupActivity : AppCompatActivity() {
             firebaseAuth.currentUser?.let {
                 //retrieving group and contact info
                 dbRef.child(it.uid).get().addOnCompleteListener() { task ->
-                    if (task.isSuccessful) {
-                        if (task.result.value != null) {
-                            val result = task.result.value as Map<String, Any>
-                            Log.i(
-                                "firebase value",
-                                "Got value ${result!!::class.java.typeName} in Group Activity"
-                            )
-                            Log.i("firebase result", "User is $result")
-                            result.forEach { (key, v) ->
-                                var contact: MutableList<SelectableGroups.Group.Contact> =
-                                    mutableListOf()
-                                if (v != "empty") {
-                                    val value = v as MutableList<Map<String, Any>>
-                                    for (i in 0 until value.size) {
-                                        val new = SelectableGroups.Group.Contact("", "", "")
-                                        value[i].forEach { (key, value) ->
-                                            when (key) {
-                                                "groupSettingsIsChecked" -> new.groupSettingsIsChecked =
-                                                    value as Boolean
-                                                "name" -> new.name = value as String
-                                                "phoneNumber" -> new.phoneNumber = value as String
-                                                "reminderText" -> new.reminderText = value as String
-                                            }
-                                        }
-                                        contact.add(new)
-                                    }
-                                    viewModel.groups.value!!.add(
-                                        ExpandableGroupModel(
-                                            ExpandableGroupModel.PARENT,
-                                            SelectableGroups.Group(
-                                                key,
-                                                contact
-                                            )
-                                        )
-                                    )
-                                }
-                            }
-                            groupRV.updateGroupModelList(viewModel.groups.value!!)
-                        }
-                    } else {
-                        Log.e("firebase", "Error getting data from contacts")
+                    if (!task.isSuccessful || task.result.value == null) {
+                        Log.e("firebase", "Error getting data from reminder")
+                        return@addOnCompleteListener
                     }
+                    var result = task.result.value as MutableMap<String, Any>
+                    result = result.toSortedMap()
+                    Log.i("firebase value", "Got value ${result!!::class.java.typeName} in Group Activity")
+                    Log.i("firebase result", "User is $result")
+                    result.forEach { (key, v) ->
+                        var contacts: MutableList<SelectableGroups.Group.Contact> = mutableListOf()
+                        val size = v as MutableMap<String,Any>
+                        val name = size["GroupName"].toString()
+                        if (size.size > 1) {  //has more than just group name stored
+                            size.remove("GroupName")
+                            Log.i("size val", "$size")
+                            val temp = ArrayList<Any>(size.values)
+                            Log.i("temp val", "$temp")
+                            for (i in 0 until size.size) {
+                                val value = temp as MutableList<Map<String,Any>>
+                                val new = SelectableGroups.Group.Contact("", "", "")
+                                value[i].forEach { (key, value) ->
+                                    when (key) {
+                                        "groupSettingsIsChecked" -> new.groupSettingsIsChecked = value as Boolean
+                                        "name" -> new.name = value as String
+                                        "phoneNumber" -> new.phoneNumber = value as String
+                                        "reminderText" -> new.reminderText = value as String
+                                    }
+                                }
+                                contacts.add(new)
+                            }
+                        }
+                        viewModel.groups.value!!.add(
+                            ExpandableGroupModel(
+                                ExpandableGroupModel.PARENT,
+                                SelectableGroups.Group(name, contacts)
+                            )
+                        )
+                    }
+                    groupRV.updateGroupModelList(viewModel.groups.value!!)
                 }
             }
+        }
 
+
+
+    private fun setEmptyContacts(groupName: String) {
+        firebaseAuth.currentUser?.let {
+            val pushKey = dbRef.child(it.uid).push().key
+            nameRef.child(it.uid).child(groupName).setValue(pushKey)
+            dbRef.child(it.uid).child(pushKey!!).updateChildren(mapOf("GroupName" to groupName ))
+        }
     }
 
+    private fun setContacts(groupName: String, contacts: List<SelectableGroups.Group.Contact>) {
+        firebaseAuth.currentUser?.let {
+            nameRef.child(it.uid).child(groupName).get().addOnCompleteListener(){task->
+                val group = task.result.value.toString()
+                Log.i("set Contacts val","$group")
+                dbRef.child(it.uid).child(group).setValue(contacts)
+                dbRef.child(it.uid).child(group).updateChildren(mapOf("GroupName" to groupName))
+            }
+
+
+        }
+    }
+
+    private fun deleteGroupInfo(groupName: String) {
+        firebaseAuth.currentUser?.let {
+            nameRef.child(it.uid).get().addOnCompleteListener(){str->
+                val res = str.result.value as Map<String,String>
+                Log.i("deleteGroup",groupName)
+                val name = res[groupName].toString()
+                Log.i("deleteName",name)
+                nameRef.child(it.uid).child(groupName).removeValue()
+                dbRef.child(it.uid).child(name).removeValue()
+                reminderRef.child(it.uid).child(groupName).removeValue()
+            }
+
+        }
+    }
 }
