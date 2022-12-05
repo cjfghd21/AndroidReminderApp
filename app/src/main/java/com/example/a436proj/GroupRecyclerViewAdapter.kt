@@ -48,6 +48,13 @@ class GroupRecyclerViewAdapter(var context: Context, var groupModelList : Mutabl
         when(row.type){
             ExpandableGroupModel.PARENT -> {
                 (holder as GroupParentViewHolder).groupName.text = row.groupParent.groupName
+                if (row.isExpanded) {
+                    holder.arrow.setImageResource(R.drawable.unexpand_arrow)
+                }
+                else {
+                    holder.arrow.setImageResource(R.drawable.expand_arrow)
+                }
+
                 holder.arrow.setOnClickListener {
                     if (row.isExpanded) {
                         row.isExpanded = false
