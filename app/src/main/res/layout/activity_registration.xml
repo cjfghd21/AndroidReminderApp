@@ -40,7 +40,7 @@
 
         <EditText
             android:id="@+id/password_req"
-            android:hint="8+ length,upper,lower case, number, special: @!%*?&amp;"
+            android:hint="Passwords must contain at least 8 characters including at least 1 uppercase letter, 1 lower case letter 1 number and 1 special character from @!%*?&amp; "
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="40dp"
