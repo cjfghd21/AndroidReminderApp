@@ -1,28 +1,31 @@
 package com.example.a436proj
 
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.example.a436proj.NotificationHandler.LocalBinder
+import java.util.*
 
 const val channelID = "channel1"
-const val notificationID = 1
 const val intervalKey = "interval"
 const val groupNameKey = "groupName"
 
 class Notification : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val notification = NotificationCompat.Builder(context, channelID)
             .setSmallIcon(android.R.drawable.stat_sys_warning)
             .setAutoCancel(true)
+            .setContentIntent(contentIntent)
             .setContentTitle(getContentTitle())
             .setContentText(getContentText(intent))
             .build()
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(notificationID, notification)
+        manager.notify(Calendar.getInstance().timeInMillis.toInt(), notification)
 
         // find service and reschedule notification
         val serviceIntent = Intent(context, NotificationHandler::class.java)

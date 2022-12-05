@@ -62,7 +62,7 @@ class NotificationHandler : Service() {
         intent.putExtra(groupNameKey, groupName)
         return PendingIntent.getBroadcast(
             applicationContext,
-            notificationID,
+            0,
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )

@@ -1,7 +1,11 @@
 package com.example.a436proj
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -9,7 +13,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.a436proj.databinding.ActivityGroupSettingsBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import java.io.Serializable
+import java.time.format.DateTimeFormatter
 
 class GroupSettingsActivity : AppCompatActivity() {
 
@@ -17,6 +25,19 @@ class GroupSettingsActivity : AppCompatActivity() {
     lateinit var contactsLists : MutableList<SelectableGroups.Group.Contact>
     private lateinit var contactsRV : GroupSettingsContactRecyclerViewAdapter
     private var groupIndex : Int = -1
+    private var groupName: String = ""
+    private lateinit var firebaseAuth: FirebaseAuth
+    private val database = Firebase.database
+    private val reminderRef = database.getReference("Reminder")
+    private lateinit var notificationHandler: NotificationHandler
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as NotificationHandler.LocalBinder
+            notificationHandler = binder.getService()
+        }
+        override fun onServiceDisconnected(arg0: ComponentName) {}
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -37,13 +58,14 @@ class GroupSettingsActivity : AppCompatActivity() {
             }
         } else if (requestCode == NotificationsActivity.requestCode) {
             if (resultCode == RESULT_OK) {
-                var interval = data?.extras?.get("interval") as Interval
-                intent.putExtra("interval", interval as Serializable)
-                intent.putExtra("groupIndex", groupIndex)
-                setResult(RESULT_OK, intent)
-            } else {
-                // cancel should set empty result
-                setResult(RESULT_CANCELED)
+                var interval = data!!.getSerializableExtra("interval") as Interval
+                //storing reminder to group
+                firebaseAuth.currentUser?.let {
+                    reminderRef.child(it.uid).child(groupName).setValue(interval)
+                }
+                notificationHandler.setIntervalForGroup(groupName, interval)
+                notificationHandler.scheduleNotification(groupName, interval)
+                showAlert(interval)
             }
             return
         }
@@ -61,8 +83,15 @@ class GroupSettingsActivity : AppCompatActivity() {
 
         supportActionBar!!.title = "Group Settings"
 
+        firebaseAuth = requireNotNull(FirebaseAuth.getInstance())
+
         val contactsList : MutableList<SelectableGroups.Group.Contact> = intent.extras?.get("contactsList") as MutableList<SelectableGroups.Group.Contact>
         groupIndex = intent.extras?.get("groupIndex") as Int
+        groupName = intent.getStringExtra("groupName")!!
+
+        Intent(this, NotificationHandler::class.java).also {intent ->
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
 
         //val notificationsList = intent.extras
 
@@ -189,5 +218,27 @@ class GroupSettingsActivity : AppCompatActivity() {
     override fun onBackPressed() {
         setResult(RESULT_OK,viewModel.resultIntent.value!!)
         super.onBackPressed()
+    }
+
+    private fun showAlert(interval: Interval) {
+        AlertDialog.Builder(this)
+            .setTitle("Notification Scheduled")
+            .setMessage(getAlertMessage(interval))
+            .setPositiveButton("Okay"){_,_ ->}
+            .show()
+    }
+
+    private fun getAlertMessage(interval: Interval): String {
+        val time = interval.timeToSendNotification.format(DateTimeFormatter.ISO_TIME)
+        return when(interval.intervalType){
+            IntervalType.Daily -> String.format("Daily Notification is scheduled at %s", time)
+            IntervalType.Weekly-> when(interval.weeklyInterval.weekInterval){
+                1 -> String.format("Weekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                2 -> String.format("Biweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                3 -> String.format("Triweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                4 -> String.format("Quatriweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
+                else -> throw Exception("Invalid weekly interval value provided!")
+            }
+        }
     }
 }

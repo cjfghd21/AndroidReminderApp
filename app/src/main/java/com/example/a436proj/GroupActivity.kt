@@ -24,8 +24,6 @@ import com.google.firebase.ktx.Firebase
 import java.io.Serializable
 import java.time.DayOfWeek
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-
 
 class GroupActivity : AppCompatActivity() {
 
@@ -125,7 +123,6 @@ class GroupActivity : AppCompatActivity() {
                 //We update the viewModel's groups list at the groupIndex that we get from the GroupSettingsActivity with the
                 //new value of the contacts that we got from the GroupSettingsActivity. Then we update the RecyclerView
                 var index = data?.extras?.get("groupIndex") as? Int
-
                 var contacts = data?.extras?.get("resultContactsList") as? MutableList<SelectableGroups.Group.Contact>
                 if (contacts != null && index != null) {
                     viewModel.groups.value!![index].groupParent.contacts = contacts
@@ -139,19 +136,6 @@ class GroupActivity : AppCompatActivity() {
                         dbRef.child(it.uid).child(viewModel.groups.value!![index].groupParent.groupName).
                             setValue(viewModel.groups.value!![index].groupParent.contacts)
                     }
-                }
-
-                var interval = data?.extras?.get("interval") as? Interval
-
-                if (interval != null && index != null) {
-                    //storing reminder to group
-                    var groupName = viewModel.groups.value!![index!!].groupParent.groupName
-                    firebaseAuth.currentUser?.let {
-                        reminderRef.child(it.uid).child(groupName).setValue(interval)
-                    }
-                    notificationHandler.setIntervalForGroup(groupName, interval)
-                    notificationHandler.scheduleNotification(groupName, interval)
-                    showAlert(interval) // moved here so when it re-creates, it doesn't show the same message.
                 }
             }
 
@@ -336,28 +320,6 @@ class GroupActivity : AppCompatActivity() {
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
-    }
-
-    private fun showAlert(interval: Interval) {
-        AlertDialog.Builder(this)
-            .setTitle("Notification Scheduled")
-            .setMessage(getAlertMessage(interval))
-            .setPositiveButton("Okay"){_,_ ->}
-            .show()
-    }
-
-    private fun getAlertMessage(interval: Interval): String {
-        val time = interval.timeToSendNotification.format(DateTimeFormatter.ISO_TIME)
-        return when(interval.intervalType){
-            IntervalType.Daily -> String.format("Daily Notification is scheduled at %s", time)
-            IntervalType.Weekly-> when(interval.weeklyInterval.weekInterval){
-                1 -> String.format("Weekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
-                2 -> String.format("Biweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
-                3 -> String.format("Triweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
-                4 -> String.format("Quatriweekly Notification is scheduled at %s %s", interval.weeklyInterval.day.name, time)
-                else -> throw Exception("Invalid weekly interval value provided!")
-            }
-        }
     }
 
     private fun updateUi() {
