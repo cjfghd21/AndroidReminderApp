@@ -34,19 +34,30 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:background="@drawable/edit_text_rounded"
-            android:layout_marginBottom="40dp"
+            android:layout_marginBottom="10dp"
             android:paddingLeft="15dp"/>
-        <Button
-            android:id="@+id/btn_sign_in_submit"
+
+
+        <EditText
+            android:id="@+id/password_req"
+            android:hint="8+ length,upper,lower case, number, special: @!%*?&amp;"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Complete Registration"
-            android:background="@drawable/button_oval" />
+            android:layout_marginBottom="40dp"
+            android:paddingLeft="15dp"/>
+
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btn_sign_in_submit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_oval"
+            android:text="Complete Registration" />
 
     </LinearLayout>
 

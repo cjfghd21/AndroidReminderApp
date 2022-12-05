@@ -1,5 +1,7 @@
 package com.example.a436proj
 
+import android.util.Log
+
 class Validators {
     fun validEmail(email: String?) : Boolean {
         if (email.isNullOrEmpty()) {
@@ -22,10 +24,12 @@ class Validators {
             return false
         }
 
-        // Min 8 char, 1 letter, 1 number
-        val passwordRegex = Regex("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}\$")
+        // Min 8 char, 1 upper letter, 1 lower letter one numeric and 1 special @$!%*?&
+        val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")
         return passwordRegex.matches(password)
     }
+
+
 
     fun isGoogleAccount(email: String?) : Boolean{
         if(email.isNullOrEmpty()){
@@ -33,6 +37,49 @@ class Validators {
         }
         val googleEmail = Regex("^^[\\w.+\\-]+@gmail\\.com\$")
         return googleEmail.matches(email)
+    }
+
+    fun reasonInvalid(password: String?) : String{
+        var message = ""
+        val lower = Regex("(?=.*[a-z])")
+        val upper = Regex("(?=.*[A-Z])")
+        val number =Regex("(?=.*\\d)")
+        val special = Regex("(?=.*[@!%*?&])")
+
+        if (password.isNullOrEmpty()) {
+            return "password cannot be empty"
+        }
+        if(password.length < 8){
+            return "password must be 8+ long"
+        }
+
+        if(!lower.containsMatchIn(password)){
+            return message +"Password doesn't contain: lower,"
+        }
+
+        if(!upper.containsMatchIn(password)){
+            if(message == ""){
+                message += "Password doesn't contain: Upper"
+            }else{
+                message += ", Upper"
+            }
+        }
+
+        if(!number.containsMatchIn(password)){
+            if(message == ""){
+                message += "Password doesn't contain: number"
+            }else{
+                message += ", number"
+            }
+        }
+        if(!special.containsMatchIn(password)){
+            if(message == ""){
+                message +="Password doesn't contain: @!%*?&"
+            }else{
+                message +=", @!%*?&"
+            }
+        }
+        return message
     }
 
 }

@@ -56,9 +56,11 @@ class RegistrationActivity : AppCompatActivity() {
 
 
         if (!validator.validPassword(password)) {  //invalid password
+            val message = validator.reasonInvalid(password)
+
             Toast.makeText(
                 this,
-                getString(R.string.invalid_password),
+                message,
                 Toast.LENGTH_LONG
             ).show()
 

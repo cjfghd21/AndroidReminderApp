@@ -6,7 +6,7 @@
     <string name="login_toast">Please enter email...</string>
     <string name="password_toast">Please enter password!</string>
     <string name="invalid_email">Please enter valid email…</string>
-    <string name="invalid_password">Password must contain 8 characters with one letter and one number!</string>
+    <string name="invalid_password">Password must contain 8 characters 1 upper, 1 lower letter, 1 number and one special:@$!%*?</string>
     <string name="invalid_google">Registration failed:Google Email. Please use Google Sign-in option</string>
     <string name="register_success_string">Registration successful!</string>
     <string name="register_failed_string">Registration failed! Please try again later</string>
